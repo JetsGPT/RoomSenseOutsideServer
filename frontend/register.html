@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - RoomSense</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Header injected by main.js -->
+
+    <main class="container flex justify-center items-center" style="min-height: 80vh;">
+        <div class="card animate-fade-in" style="width: 100%; max-width: 400px;">
+            <h2 class="text-center mb-4">Create Account</h2>
+            <p class="text-center mb-4 text-muted">Join RoomSense to start monitoring</p>
+
+            <form id="register-form" class="flex-col gap-4">
+                <div>
+                    <label for="username"
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Username</label>
+                    <input type="text" id="username" class="input" placeholder="johndoe" required>
+                </div>
+                <div>
+                    <label for="email" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Email</label>
+                    <input type="email" id="email" class="input" placeholder="name@example.com" required>
+                </div>
+                <div>
+                    <label for="password"
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Password</label>
+                    <input type="password" id="password" class="input" placeholder="••••••••" required>
+                </div>
+
+                <div id="error-message" class="text-center"
+                    style="color: hsl(var(--destructive)); font-size: 0.875rem; display: none;"></div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Create
+                    Account</button>
+            </form>
+
+            <p class="text-center mt-4 text-muted" style="font-size: 0.875rem;">
+                Already have an account? <a href="login.html" class="text-primary"
+                    style="text-decoration: underline;">Sign in</a>
+            </p>
+        </div>
+    </main>
+
+    <!-- Footer injected by main.js -->
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error-message');
+            const btn = e.target.querySelector('button');
+
+            try {
+                btn.textContent = 'Creating Account...';
+                btn.disabled = true;
+                errorEl.style.display = 'none';
+
+                await register(username, email, password);
+                // Auto login or redirect to login
+                await login(email, password);
+                window.location.href = 'index.html';
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
+                btn.textContent = 'Create Account';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

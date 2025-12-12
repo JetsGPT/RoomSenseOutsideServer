@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomSense - Intelligent Room Monitoring</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Header injected by main.js -->
+
+    <main class="flex-col items-center">
+        <!-- Hero Section -->
+        <section class="container py-8 flex-col items-center text-center animate-fade-in"
+            style="min-height: 60vh; justify-content: center;">
+            <h1
+                style="font-size: 4rem; margin-bottom: 1.5rem; background: linear-gradient(to right, var(--dark-slate-green), var(--moss-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                RoomSense
+            </h1>
+            <p style="font-size: 1.5rem; font-weight: 500; margin-bottom: 1rem; color: var(--foreground);">
+                Intelligent IoT Sensor Box for Environmental Monitoring
+            </p>
+            <p style="font-size: 1.1rem; max-width: 700px; margin: 0 auto 2rem auto; color: var(--muted-foreground);">
+                Residential buildings and offices often lack precise, real-time environmental data.
+                RoomSense bridges this gap by providing actionable insights on temperature, humidity, air quality,
+                noise, and occupancy.
+            </p>
+            <div class="flex gap-4 justify-center">
+                <a href="register.html" class="btn btn-primary" style="padding: 0.75rem 2rem; font-size: 1.1rem;">Get
+                    Started</a>
+                <a href="about.html" class="btn btn-outline" style="padding: 0.75rem 2rem; font-size: 1.1rem;">Learn
+                    More</a>
+            </div>
+        </section>
+
+        <!-- Problem & Solution -->
+        <section class="container py-8">
+            <div class="flex gap-8" style="flex-wrap: wrap;">
+                <div class="card" style="flex: 1; min-width: 300px;">
+                    <h2 class="mb-4">The Problem</h2>
+                    <p>
+                        Many buildings suffer from the absence of a system that delivers precise, real-time
+                        environmental and occupancy data.
+                        This leads to energy waste (e.g., lights on in empty rooms) and suboptimal living conditions.
+                    </p>
+                </div>
+                <div class="card" style="flex: 1; min-width: 300px; border-color: var(--primary);">
+                    <h2 class="mb-4">Our Solution</h2>
+                    <p>
+                        An innovative IoT sensor box that measures temperature, humidity, air quality, noise levels, and
+                        occupancy.
+                        It empowers you to formulate automation strategies—like automatically closing windows or
+                        adjusting the AC.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="container py-8">
+            <h2 class="text-center mb-4">Key Features</h2>
+            <div class="flex gap-8 justify-center" style="flex-wrap: wrap; margin-top: 3rem;">
+                <div class="card" style="flex: 1; min-width: 250px;">
+                    <h3 class="mb-4">Secure Authentication</h3>
+                    <p>Powered by our Outside Server middleware with Supabase auth, ready for login and registration.</p>
+                </div>
+                <div class="card" style="flex: 1; min-width: 250px;">
+                    <h3 class="mb-4">Customizable Intervals</h3>
+                    <p>Capture sensor data at personalized intervals and sync to the cloud.</p>
+                </div>
+                <div class="card" style="flex: 1; min-width: 250px;">
+                    <h3 class="mb-4">Smart Analysis</h3>
+                    <p>Get insights like average temperature or peak room occupancy times.</p>
+                </div>
+                <div class="card" style="flex: 1; min-width: 250px;">
+                    <h3 class="mb-4">Automation Events</h3>
+                    <p>Set rules such as “Turn on AC if temp &gt; 30°C and room is occupied.”</p>
+                </div>
+                <div class="card" style="flex: 1; min-width: 250px;">
+                    <h3 class="mb-4">Open API</h3>
+                    <p>Export data or connect the SensorBox with your stack via the REST endpoints.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Status & Actions -->
+        <section class="container py-8">
+            <div class="card" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 260px;">
+                    <h3 class="mb-2">Outside Server Middleware</h3>
+                    <p class="text-muted">Calls are routed to the FastAPI + Supabase backend at https://localhost:8443. Try a health check or jump straight to authentication.</p>
+                    <div class="flex gap-2" style="margin-top: 1rem; flex-wrap: wrap;">
+                        <button id="btn-check-api" class="btn btn-outline">Check API Health</button>
+                        <a href="login.html" class="btn btn-primary">Go to Login</a>
+                        <a href="register.html" class="btn btn-outline">Create Account</a>
+                    </div>
+                </div>
+                <div class="card" style="flex: 1; min-width: 220px; background: linear-gradient(135deg, var(--sidebar) 0%, var(--accent) 100%); color: var(--foreground);">
+                    <p style="font-size: 0.95rem;">API status</p>
+                    <h3 id="api-status-display" style="margin: 0.35rem 0;">Checking...</h3>
+                    <p id="api-status-detail" class="text-muted" style="font-size: 0.9rem;">Awaiting response from middleware</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer injected by main.js -->
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        const statusDisplay = document.getElementById('api-status-display');
+        const statusDetail = document.getElementById('api-status-detail');
+        const checkBtn = document.getElementById('btn-check-api');
+
+        async function runApiCheck() {
+            if (!statusDisplay || typeof pingApi !== 'function') return;
+            statusDisplay.textContent = 'Checking...';
+            statusDetail.textContent = 'Pinging https://localhost:8443';
+            try {
+                const result = await pingApi();
+                if (result.ok) {
+                    statusDisplay.textContent = 'Online';
+                    statusDetail.textContent = JSON.stringify(result.data);
+                } else {
+                    statusDisplay.textContent = 'Offline';
+                    statusDetail.textContent = 'API responded with an error.';
+                }
+            } catch (err) {
+                statusDisplay.textContent = 'Offline';
+                statusDetail.textContent = 'Could not reach the middleware.';
+            }
+        }
+
+        if (checkBtn) {
+            checkBtn.addEventListener('click', runApiCheck);
+        }
+
+        runApiCheck();
+    </script>
+</body>
+
+</html>
