@@ -3,3 +3,4 @@ python-dotenv==1.0.0
 websockets==13.1
 realtime>=2.0.0
 fastapi[standard]==0.115.5
+uvicorn

@@ -1,4 +1,6 @@
 import os
+from typing import Optional
+
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -46,3 +48,25 @@ def login_user(supabase: Client, email: str, password: str):
         }
     )
     return response
+
+
+def check_if_box_exists(supabase: Client, server_id: Optional[str]) -> str:
+    if server_id:
+        try:
+            res = supabase.table("connected_servers").select("id").eq("id", server_id).execute()
+            if res.data:
+                return res.data[0]['id']
+        except Exception as e:
+            print(f"Error verifying server ID: {e}")
+            return None
+    return None
+
+
+def update_box_status(supabase: Client, server_id: str, status: str):
+    try:
+        supabase.table("connected_servers").update({
+            "status": status,
+            "last_seen": "now()"
+        }).eq("id", server_id).execute()
+    except Exception as e:
+        print(f"Error updating status: {e}")
