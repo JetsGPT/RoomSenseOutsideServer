@@ -51,7 +51,7 @@ async def websocket_gateway(websocket: WebSocket):
         if data.get("type") == "IDENTIFY":
             provided_id = data.get("box_id")
 
-            box_id = check_if_box_exists(provided_id)
+            box_id = check_if_box_exists(supabase, provided_id)
 
             if not box_id:
                 await websocket.close(code=4001, reason="Invalid Identity")
