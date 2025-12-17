@@ -4,6 +4,7 @@ import uuid
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Response, Request
 from pydantic import BaseModel
 from supabase_code import initialize_supabase, create_user, login_user, check_username_exists, check_if_box_exists, update_box_status
+import json
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -113,8 +114,13 @@ async def proxy_request(box_id: str, path: str, request: Request):
         response_data = await asyncio.wait_for(future, timeout=10.0)
 
         resp_payload = response_data.get("payload", {})
+        response_body = resp_payload.get("body")
+
+        if isinstance(response_body, (dict, list)):
+            response_body = json.dumps(response_body)
+
         return Response(
-            content=resp_payload.get("body"),
+            content=response_body,
             status_code=resp_payload.get("status", 200),
             media_type=resp_payload.get("headers", {}).get("content-type", "application/json")
         )
