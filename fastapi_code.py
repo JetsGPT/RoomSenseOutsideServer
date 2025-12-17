@@ -65,7 +65,7 @@ async def websocket_gateway(websocket: WebSocket):
                 })
 
             active_connections[box_id] = websocket
-            update_box_status(box_id, "online")
+            update_box_status(supabse, box_id, "online")
             print(f"✅ Server connected: {box_id}")
 
             while True:
@@ -83,7 +83,7 @@ async def websocket_gateway(websocket: WebSocket):
     finally:
         if box_id:
             active_connections.pop(box_id, None)
-            update_box_status(box_id, "offline")
+            update_box_status(supabase, box_id, "offline")
 
 
 @app.api_route("/proxy/{box_id}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
