@@ -4,45 +4,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your RoomSense account to start monitoring your smart spaces.">
+    <meta name="theme-color" content="#79BC9E">
     <title>Register - RoomSense</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2379BC9E' stroke-width='2'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>">
 </head>
 
 <body>
     <!-- Header injected by main.js -->
 
-    <main class="container flex justify-center items-center" style="min-height: 80vh;">
-        <div class="card animate-fade-in" style="width: 100%; max-width: 400px;">
-            <h2 class="text-center mb-4">Create Account</h2>
-            <p class="text-center mb-4 text-muted">Join RoomSense to start monitoring</p>
+    <main class="hero min-h-screen">
+        <div class="hero-bg"></div>
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
 
-            <form id="register-form" class="flex-col gap-4">
-                <div>
-                    <label for="username"
-                        style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Username</label>
-                    <input type="text" id="username" class="input" placeholder="johndoe" required>
-                </div>
-                <div>
-                    <label for="email" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Email</label>
-                    <input type="email" id="email" class="input" placeholder="name@example.com" required>
-                </div>
-                <div>
-                    <label for="password"
-                        style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Password</label>
-                    <input type="password" id="password" class="input" placeholder="••••••••" required>
+        <div class="container relative z-10 flex justify-center items-center py-8">
+            <div class="auth-card animate-fade-in-up">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Create Account</h1>
+                    <p class="text-muted">Join RoomSense to start monitoring your spaces.</p>
                 </div>
 
-                <div id="error-message" class="text-center"
-                    style="color: hsl(var(--destructive)); font-size: 0.875rem; display: none;"></div>
+                <!-- Error Message -->
+                <div id="error-message" class="alert alert-error mb-4 hidden animate-scale-in">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    <span id="error-text"></span>
+                </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Create
-                    Account</button>
-            </form>
+                <!-- Success Message -->
+                <div id="success-message" class="alert alert-success mb-4 hidden animate-scale-in">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span id="success-text"></span>
+                </div>
 
-            <p class="text-center mt-4 text-muted" style="font-size: 0.875rem;">
-                Already have an account? <a href="login.html" class="text-primary"
-                    style="text-decoration: underline;">Sign in</a>
-            </p>
+                <!-- Register Form -->
+                <form id="register-form" class="flex-col gap-4">
+                    <!-- Username Field -->
+                    <div class="mb-4">
+                        <label for="username" class="label">Username</label>
+                        <div class="input-wrapper">
+                            <svg class="icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <input type="text" id="username" class="input input-icon" placeholder="johndoe" required
+                                autocomplete="username" pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="30">
+                        </div>
+                        <p class="text-xs text-muted mt-1">Letters, numbers, and underscores only</p>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="mb-4">
+                        <label for="email" class="label">Email</label>
+                        <div class="input-wrapper">
+                            <svg class="icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                </path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <input type="email" id="email" class="input input-icon" placeholder="name@example.com"
+                                required autocomplete="email">
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-4">
+                        <label for="password" class="label">Password</label>
+                        <div class="input-wrapper">
+                            <svg class="icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <input type="password" id="password" class="input input-icon" placeholder="••••••••"
+                                required autocomplete="new-password" minlength="6" style="padding-right: 3rem;">
+                            <button type="button" id="toggle-password" class="icon-right btn btn-ghost btn-icon-sm">
+                                <svg id="eye-icon" class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eye-off-icon" class="icon-sm hidden" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- Password Strength Indicator -->
+                        <div id="password-strength" class="mt-2 hidden">
+                            <div class="flex gap-1 mb-1">
+                                <div id="strength-1" class="h-1 flex-1 rounded bg-muted"></div>
+                                <div id="strength-2" class="h-1 flex-1 rounded bg-muted"></div>
+                                <div id="strength-3" class="h-1 flex-1 rounded bg-muted"></div>
+                                <div id="strength-4" class="h-1 flex-1 rounded bg-muted"></div>
+                            </div>
+                            <p id="strength-text" class="text-xs text-muted"></p>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="mb-6">
+                        <label for="confirm-password" class="label">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <svg class="icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            <input type="password" id="confirm-password" class="input input-icon" placeholder="••••••••"
+                                required autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <!-- Terms Checkbox -->
+                    <div class="flex items-start gap-3 mb-6">
+                        <input type="checkbox" id="accept-terms" required
+                            style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary); margin-top: 2px;">
+                        <label for="accept-terms" class="text-sm text-muted cursor-pointer">
+                            I agree to the <a href="agb.html" class="text-primary"
+                                style="text-decoration: underline;">Terms of Service</a>
+                            and <a href="privacy.html" class="text-primary" style="text-decoration: underline;">Privacy
+                                Policy</a>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submit-btn" class="btn btn-primary btn-lg w-full">
+                        <span id="btn-text">Create Account</span>
+                        <span id="btn-loading" class="hidden flex items-center gap-2">
+                            <span class="spinner"></span>
+                            Creating account...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Login Link -->
+                <div class="text-center mt-6">
+                    <p class="text-sm text-muted">
+                        Already have an account?
+                        <a href="login.html" class="text-primary font-medium" style="text-decoration: underline;">
+                            Sign in
+                        </a>
+                    </p>
+                </div>
+
+                <!-- Divider -->
+                <div class="flex items-center gap-4 my-6">
+                    <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                    <span class="text-xs text-muted">OR</span>
+                    <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                </div>
+
+                <!-- Back to Home -->
+                <a href="index.html" class="btn btn-ghost w-full">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5"></path>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to Home
+                </a>
+            </div>
         </div>
     </main>
 
@@ -51,31 +185,148 @@
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script>
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
+        const form = document.getElementById('register-form');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const termsCheckbox = document.getElementById('accept-terms');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const successMessage = document.getElementById('success-message');
+        const successText = document.getElementById('success-text');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoading = document.getElementById('btn-loading');
+        const togglePassword = document.getElementById('toggle-password');
+        const eyeIcon = document.getElementById('eye-icon');
+        const eyeOffIcon = document.getElementById('eye-off-icon');
+        const passwordStrength = document.getElementById('password-strength');
+        const strengthText = document.getElementById('strength-text');
+
+        // Toggle password visibility
+        togglePassword.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeIcon.classList.toggle('hidden', !isPassword);
+            eyeOffIcon.classList.toggle('hidden', isPassword);
+        });
+
+        // Password strength checker
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            passwordStrength.classList.toggle('hidden', password.length === 0);
+
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+            if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength++;
+
+            const colors = ['#ef4444', '#f59e0b', '#22c55e', '#22c55e'];
+            const texts = ['Weak', 'Fair', 'Good', 'Strong'];
+
+            for (let i = 1; i <= 4; i++) {
+                const bar = document.getElementById(`strength-${i}`);
+                if (i <= strength) {
+                    bar.style.backgroundColor = colors[strength - 1];
+                } else {
+                    bar.style.backgroundColor = 'var(--muted)';
+                }
+            }
+            strengthText.textContent = strength > 0 ? texts[strength - 1] : '';
+            strengthText.style.color = colors[strength - 1] || 'var(--muted-foreground)';
+        });
+
+        // Show error
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            successMessage.classList.add('hidden');
+        }
+
+        // Show success
+        function showSuccess(message) {
+            successText.textContent = message;
+            successMessage.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+        }
+
+        // Hide messages
+        function hideMessages() {
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+        }
+
+        // Set loading state
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            btnText.classList.toggle('hidden', loading);
+            btnLoading.classList.toggle('hidden', !loading);
+        }
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorEl = document.getElementById('error-message');
-            const btn = e.target.querySelector('button');
+            hideMessages();
+
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            // Validation
+            if (!username || !email || !password || !confirmPassword) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showError('Username can only contain letters, numbers, and underscores');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            if (!termsCheckbox.checked) {
+                showError('Please accept the Terms of Service');
+                return;
+            }
+
+            setLoading(true);
 
             try {
-                btn.textContent = 'Creating Account...';
-                btn.disabled = true;
-                errorEl.style.display = 'none';
-
                 await register(username, email, password);
-                // Auto login or redirect to login
+                showSuccess('Account created successfully! Logging you in...');
+
+                // Auto login after registration
                 await login(email, password);
-                window.location.href = 'index.html';
+                window.location.href = 'dashboard.html';
             } catch (error) {
-                errorEl.textContent = error.message;
-                errorEl.style.display = 'block';
-                btn.textContent = 'Create Account';
-                btn.disabled = false;
+                showError(error.message || 'Registration failed. Please try again.');
+            } finally {
+                setLoading(false);
             }
         });
     </script>
+
+    <style>
+        .h-1 {
+            height: 0.25rem;
+        }
+
+        .flex-1 {
+            flex: 1;
+        }
+    </style>
 </body>
 
 </html>
