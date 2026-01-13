@@ -101,12 +101,25 @@ async def websocket_gateway(websocket: WebSocket):
 
         if data.get("type") == "IDENTIFY":
             provided_id = data.get("box_id")
+            provided_password = data.get("password")
 
-            box_id = check_if_box_exists(supabase, provided_id)
+            result = check_if_box_exists(supabase, provided_id, provided_password)
 
-            if not box_id:
+            if not result:
                 await websocket.close(code=4001, reason="Invalid Identity")
                 return
+
+            box_id = result.get("server_id")
+            claim_password = result.get("claim_password")
+
+            if claim_password:
+                await websocket.send_json({
+                    "type": "REGISTERED",
+                    "payload": {
+                        "box_id": box_id,
+                        "claim_password": claim_password
+                    }
+                })
 
             if provided_id != box_id:
                 await websocket.send_json({

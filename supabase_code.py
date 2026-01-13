@@ -59,16 +59,71 @@ def validate_access_token(supabase: Client, access_token: str):
         return None
 
 
-def check_if_box_exists(supabase: Client, server_id: Optional[str]) -> Optional[str]:
+def check_if_box_exists(supabase: Client, server_id: Optional[str], password: Optional[str] = None) -> Optional[dict]:
     if server_id:
         try:
             res = supabase.table("connected_servers").select("id").eq("id", server_id).execute()
             if res.data:
-                return res.data[0]['id']
+                return {"server_id": res.data[0]['id']}
+
+            if password:
+                new_server = check_new_server(supabase, server_id, password)
+                if new_server:
+                    result = register_new_server(supabase, server_id, new_server.get("metadata"))
+                    if result:
+                        return result
         except Exception as e:
             print(f"Error verifying server ID: {e}")
             return None
     return None
+
+
+def check_new_server(supabase: Client, server_id: str, password: str) -> Optional[dict]:
+    try:
+        res = supabase.table("new_servers").select("*").eq("server_id", server_id).execute()
+        if res.data and len(res.data) > 0:
+            stored_password = res.data[0].get("password")
+            if stored_password == password:
+                return res.data[0]
+        return None
+    except Exception as e:
+        print(f"Error checking new server: {e}")
+        return None
+
+
+def generate_claim_password(length: int = 12) -> str:
+    import secrets
+    import string
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+def register_new_server(supabase: Client, server_id: str, metadata: Optional[dict] = None) -> Optional[dict]:
+    try:
+        claim_password = generate_claim_password()
+
+        insert_data = {
+            "id": server_id,
+            "status": "offline",
+            "metadata": metadata or {}
+        }
+        supabase.table("connected_servers").insert(insert_data).execute()
+
+        supabase.table("unclaimed_servers").insert({
+            "server_id": server_id,
+            "password": claim_password,
+            "created_at": "now()"
+        }).execute()
+
+        supabase.table("new_servers").delete().eq("server_id", server_id).execute()
+
+        return {
+            "server_id": server_id,
+            "claim_password": claim_password
+        }
+    except Exception as e:
+        print(f"Error registering new server: {e}")
+        return None
 
 
 def update_box_status(supabase: Client, server_id: str, status: str):
