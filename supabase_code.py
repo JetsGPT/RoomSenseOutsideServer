@@ -229,6 +229,58 @@ def get_server_assignments(supabase: Client, server_id: str) -> list:
         return []
 
 
+def request_email_change(supabase: Client, access_token: str, new_email: str) -> dict:
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        if not user_response or not user_response.user:
+            return {"success": False, "error": "invalid_token", "message": "Invalid or expired token"}
+
+        current_email = user_response.user.email
+        if current_email == new_email:
+            return {"success": False, "error": "same_email", "message": "New email is the same as current email"}
+
+        update_response = supabase.auth.update_user({
+            "email": new_email
+        })
+
+        if update_response and update_response.user:
+            return {
+                "success": True,
+                "message": "Confirmation email sent. Please check your inbox to confirm the email change.",
+                "new_email": new_email
+            }
+
+        return {"success": False, "error": "update_failed", "message": "Failed to initiate email change"}
+    except Exception as e:
+        error_message = str(e)
+        if "email_exists" in error_message.lower() or "already registered" in error_message.lower():
+            return {"success": False, "error": "email_exists", "message": "This email is already registered to another account"}
+        if "rate limit" in error_message.lower():
+            return {"success": False, "error": "rate_limit", "message": "Too many requests. Please try again later."}
+        print(f"Error requesting email change: {e}")
+        return {"success": False, "error": "unknown", "message": str(e)}
+
+
+def verify_email_change_token(supabase: Client, token_hash: str, token_type: str = "email_change") -> dict:
+    try:
+        response = supabase.auth.verify_otp({
+            "token_hash": token_hash,
+            "type": token_type
+        })
+
+        if response and response.user:
+            return {
+                "success": True,
+                "user": response.user,
+                "session": response.session
+            }
+
+        return {"success": False, "error": "verification_failed", "message": "Failed to verify email change"}
+    except Exception as e:
+        print(f"Error verifying email change token: {e}")
+        return {"success": False, "error": "verification_failed", "message": str(e)}
+
+
 def get_user_servers(supabase: Client, user_id: str) -> dict:
     try:
         owned_response = supabase.table("connected_servers").select(

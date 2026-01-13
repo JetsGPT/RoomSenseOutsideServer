@@ -2,12 +2,13 @@ from typing import Dict
 import asyncio
 import uuid
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Response, Request, Depends, Cookie
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from supabase_code import initialize_supabase, create_user, login_user, check_username_exists, check_if_box_exists, \
     update_box_status, validate_access_token, get_box_owner, verify_unclaimed_server_password, claim_box, \
     find_user_by_username_or_email, assign_server_to_user, check_server_assignment_exists, \
-    remove_server_assignment, get_server_assignments, get_user_servers
+    remove_server_assignment, get_server_assignments, get_user_servers, request_email_change, \
+    verify_email_change_token
 import json
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,6 +55,9 @@ class AssignServerRequest(BaseModel):
 class RemoveAssignmentRequest(BaseModel):
     server_id: str
     user_id: str
+
+class EmailChangeRequest(BaseModel):
+    new_email: str
 
 async def get_current_user(access_token: str = Cookie(None)):
     if not access_token:
@@ -281,6 +285,93 @@ async def get_me(current_user = Depends(get_current_user)):
             "user_metadata": current_user.user_metadata
         }
     }
+
+
+@app.post("/api/user/email")
+async def change_email(
+    request: EmailChangeRequest,
+    access_token: str = Cookie(None),
+    current_user = Depends(get_current_user)
+):
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail={"error": "not_authenticated", "message": "Not authenticated"}
+        )
+
+    if not request.new_email or "@" not in request.new_email:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "invalid_email", "message": "Please provide a valid email address"}
+        )
+
+    result = request_email_change(supabase, access_token, request.new_email)
+
+    if not result["success"]:
+        error_code = result.get("error", "unknown")
+        status_codes = {
+            "invalid_token": 401,
+            "same_email": 400,
+            "email_exists": 400,
+            "rate_limit": 429,
+            "unknown": 500
+        }
+        raise HTTPException(
+            status_code=status_codes.get(error_code, 500),
+            detail={"error": error_code, "message": result.get("message", "Failed to change email")}
+        )
+
+    return {
+        "status": "success",
+        "message": result["message"],
+        "new_email": result["new_email"]
+    }
+
+
+@app.get("/auth/callback")
+async def auth_callback(
+    response: Response,
+    token_hash: str = None,
+    type: str = None,
+    error: str = None,
+    error_description: str = None
+):
+    frontend_success_url = "https://localhost:5173/settings?email_changed=true"
+    frontend_error_url = "https://localhost:5173/settings?email_change_error=true"
+
+    if error:
+        error_msg = error_description or error
+        return RedirectResponse(
+            url=f"{frontend_error_url}&message={error_msg}",
+            status_code=303
+        )
+
+    if not token_hash or not type:
+        return RedirectResponse(
+            url=f"{frontend_error_url}&message=Invalid callback parameters",
+            status_code=303
+        )
+
+    if type == "email_change":
+        result = verify_email_change_token(supabase, token_hash, type)
+
+        if not result["success"]:
+            return RedirectResponse(
+                url=f"{frontend_error_url}&message={result.get('message', 'Verification failed')}",
+                status_code=303
+            )
+
+        if result.get("session"):
+            redirect_response = RedirectResponse(url=frontend_success_url, status_code=303)
+            set_auth_cookies(redirect_response, result["session"], secure=True)
+            return redirect_response
+
+        return RedirectResponse(url=frontend_success_url, status_code=303)
+
+    return RedirectResponse(
+        url=f"{frontend_error_url}&message=Unknown callback type",
+        status_code=303
+    )
 
 
 @app.post("/api/boxes/claim")
