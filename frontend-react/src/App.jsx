@@ -6,6 +6,7 @@ import Team from './pages/Team'
 import Terms from './pages/Terms'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Boxes from './pages/Boxes'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="terms" element={<Terms />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="boxes" element={<Boxes />} />
       </Route>
     </Routes>
   )

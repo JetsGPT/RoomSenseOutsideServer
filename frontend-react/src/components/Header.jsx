@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import ApiStatus from './ApiStatus'
@@ -6,11 +6,17 @@ import ApiStatus from './ApiStatus'
 function Header() {
   const { theme, toggleTheme } = useTheme()
   const { user, logout, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   const getDisplayName = () => {
     if (!user) return ''
     const meta = user?.user_metadata || {}
     return meta.username || user?.email || 'Signed in'
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
   }
 
   return (
@@ -40,6 +46,11 @@ function Header() {
           <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Home
           </NavLink>
+          {isAuthenticated && (
+            <NavLink to="/boxes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              Boxes
+            </NavLink>
+          )}
           <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             About
           </NavLink>
@@ -54,11 +65,11 @@ function Header() {
           
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
-              <span className="text-muted" style={{ fontSize: '0.875rem' }}>
+              <NavLink to="/boxes" className="text-muted" style={{ fontSize: '0.875rem' }}>
                 {getDisplayName()}
-              </span>
+              </NavLink>
               <button 
-                onClick={logout}
+                onClick={handleLogout}
                 className="btn btn-outline" 
                 style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
               >

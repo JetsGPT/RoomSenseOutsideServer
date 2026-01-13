@@ -9,6 +9,16 @@ function extractError(detail, fallback) {
   return fallback
 }
 
+function getAuthHeaders() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    if (user?.access_token) {
+      return { 'Authorization': `Bearer ${user.access_token}` }
+    }
+  } catch {}
+  return {}
+}
+
 export async function register(username, email, password) {
   const response = await fetch(`${API_URL}/register`, {
     method: 'POST',
@@ -41,6 +51,40 @@ export async function login(email, password) {
 
   if (!response.ok) {
     const message = extractError(data.detail, 'Login failed')
+    throw new Error(message)
+  }
+
+  return data
+}
+
+export async function logout() {
+  try {
+    const response = await fetch(`${API_URL}/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+    })
+    return { ok: response.ok }
+  } catch (error) {
+    return { ok: false, error: error.message }
+  }
+}
+
+export async function getBoxes() {
+  const response = await fetch(`${API_URL}/api/boxes`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+  })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    const message = extractError(data.detail, 'Failed to fetch boxes')
     throw new Error(message)
   }
 

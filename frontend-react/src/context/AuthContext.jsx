@@ -27,7 +27,10 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  const logout = () => {
+  const logout = async () => {
+    // Call server-side logout
+    await api.logout()
+    // Clear local state
     setUser(null)
     localStorage.removeItem('user')
   }
