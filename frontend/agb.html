@@ -12,34 +12,115 @@
     <!-- Header injected by main.js -->
 
     <main class="container py-8 animate-fade-in">
-            <h1 class="mb-4">Terms of Service & Privacy</h1>
+        <h1 class="mb-4">General Terms and Conditions (GTC) for RoomSense</h1>
+        <p class="text-muted mb-4">Date: January 2026 | Provider: Project Team "JetsGPT" (Diploma Project of HTL Donaustadt)</p>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 1 Scope and Project Status</h3>
+            <p class="mb-4">
+                These General Terms and Conditions (hereinafter referred to as "GTC") govern the use of the hardware and software solution "RoomSense" (hereinafter referred to as "Service"), provided by the project team JetsGPT (hereinafter referred to as "Provider").
+            </p>
+            <p class="mb-4" style="background: rgba(255, 193, 7, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <strong>Important Note regarding Project Status:</strong> The user acknowledges that RoomSense is a diploma project within the framework of an academic education. The software and hardware are provided "as is". There is no claim to continuous availability, commercial warranty, or professional support.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 2 Subject of Service</h3>
+            <p class="mb-4">The Service includes the following components, as described in the project documentation:</p>
+            <ul class="mb-4" style="list-style: disc; padding-left: 1.5rem;">
+                <li class="mb-2"><strong>The Hardware ("The Box"):</strong> An IoT sensor node for measuring environmental data (temperature, humidity, air quality, etc.).</li>
+                <li class="mb-2"><strong>The Software Platform:</strong> Access to the web dashboard for data visualization via the React App.</li>
+                <li class="mb-2"><strong>API Access:</strong> Interfaces for retrieving sensor data and for integration into third-party systems.</li>
+                <li class="mb-2"><strong>Backend Services:</strong> Storage of data in databases (PostgreSQL, InfluxDB) and routing via the Forwarding Server.</li>
+            </ul>
+        </div>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 3 Registration and Security</h3>
+            <p class="mb-4">Registration is required to use the dashboard. The user agrees to provide truthful information.</p>
+            <p class="mb-4">
+                <strong>Credentials:</strong> The user is responsible for keeping their password confidential. On the server side, passwords are stored encrypted using Bcrypt and salt. However, the protection of the end device is the responsibility of the user.
+            </p>
+            <p class="mb-4">
+                <strong>Reporting Obligation:</strong> In case of suspected misuse of the account, the Provider must be informed immediately.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 4 Use of the API and Fair Use (Rate Limiting)</h3>
+            <p class="mb-4">Access to the API is subject to technical restrictions to ensure system stability for all users.</p>
+            <p class="mb-4"><strong>Rate Limits:</strong> The user accepts the implemented access restrictions:</p>
+            <ul class="mb-4" style="list-style: disc; padding-left: 1.5rem;">
+                <li class="mb-2"><strong>Authenticated Requests:</strong> Maximum 120 requests per 60 seconds.</li>
+                <li class="mb-2"><strong>Login Attempts:</strong> Maximum 20 requests per 60 seconds.</li>
+            </ul>
+            <p class="mb-4">Exceeding these limits will result in a temporary block (HTTP Status 429).</p>
+            <p class="mb-4" style="background: rgba(220, 53, 69, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #dc3545;">
+                Any attempt to bypass these security mechanisms (e.g., DDoS attacks, "hammering") will result in the immediate suspension of the account.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 5 Exclusion of Liability for Automations</h3>
+            <p class="mb-4">RoomSense offers functions to trigger actions based on sensor data (e.g., "Switch on air conditioning if temperature > 30°C").</p>
+            <p class="mb-4" style="background: rgba(255, 193, 7, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <strong>Warning:</strong> The user acknowledges that malfunctions (e.g., sensor failure, connection loss, software bugs) cannot be ruled out.
+            </p>
+            <p class="mb-4"><strong>Exclusion of Liability:</strong> The Provider is not liable for damages resulting from automated switching operations. This includes in particular, but not limited to:</p>
+            <ul class="mb-4" style="list-style: disc; padding-left: 1.5rem;">
+                <li class="mb-2">Energy costs due to permanently running devices.</li>
+                <li class="mb-2">Damages caused by devices not being switched on (e.g., overheating).</li>
+                <li class="mb-2">Physical damages caused by incorrect control signals.</li>
+            </ul>
+            <p class="mb-4" style="background: rgba(220, 53, 69, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #dc3545;">
+                <strong>The use of RoomSense in safety-critical areas (e.g., medical monitoring, fire protection) is prohibited.</strong>
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 6 Data Protection</h3>
+            <p class="mb-4">
+                <strong>Sensor Data:</strong> The environmental data collected by the user is stored in an InfluxDB database.
+            </p>
+            <p class="mb-4">
+                <strong>Personal Data:</strong> Username, password hash, and roles are stored in a PostgreSQL database for login and administration purposes.
+            </p>
+            <p class="mb-4">
+                Data will not be passed on to third parties unless this is necessary for the technical provision of the Service or required by law.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 7 Hardware and Assembly</h3>
+            <p class="mb-4">The "RoomSense" box is a prototype. Assembly and wiring are carried out at the user's own risk.</p>
+            <p class="mb-4">
+                The Provider assumes no liability for damage to walls, furniture, or electrical house installations caused by assembly (e.g., magnetic pin fittings).
+            </p>
+            <p class="mb-4">
+                The user must ensure that the hardware (especially power supply units) complies with local safety regulations.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <h3 class="mb-4">§ 8 Changes and Termination</h3>
+            <p class="mb-4">
+                As this is an ongoing development project, the Provider reserves the right to change, extend, or discontinue functions at any time ("Feature Updates").
+            </p>
+            <p class="mb-4">
+                The user may request the deletion of their account at any time.
+            </p>
+            <p class="mb-4">
+                The Provider is entitled to discontinue the Service – particularly after the completion of the diploma project.
+            </p>
+        </div>
 
         <div class="card">
-                <h3 class="mb-4">1) Scope</h3>
-            <p class="mb-4">
-                    These terms apply to the RoomSense Outside web experience and the middleware endpoints it consumes.
-            </p>
-
-                <h3 class="mb-4">2) Service Description</h3>
-            <p class="mb-4">
-                    The Outside Server middleware exposes HTTPS endpoints for registration and login, backed by Supabase auth.
-                    Availability targets are best-effort during development.
-            </p>
-
-                <h3 class="mb-4">3) Data Protection</h3>
-            <p class="mb-4">
-                    Authentication data is handled by Supabase; we store only the session payload in your browser's local
-                    storage. Clear storage via the Logout action at any time.
-            </p>
-
-                <h3 class="mb-4">4) Liability</h3>
-            <p class="mb-4">
-                    Use is provided “as is” during development. We are not liable for outages, data loss, or misuse while the
-                    platform is under active iteration.
-            </p>
-
+            <h3 class="mb-4">§ 9 Jurisdiction and Applicable Law</h3>
+            <p class="mb-4">Austrian law applies.</p>
+            <p class="mb-4">Place of performance and jurisdiction is Vienna (Location of HTL Donaustadt).</p>
             <p class="text-muted" style="font-size: 0.875rem; margin-top: 2rem;">
-                    Updated: December 2025
+                Updated: January 2026
             </p>
         </div>
     </main>
