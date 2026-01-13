@@ -21,6 +21,7 @@ async function register(username, email, password) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',  // Required to receive cookies over HTTPS
         body: JSON.stringify({ username, email, password }),
     });
 
@@ -43,6 +44,7 @@ async function login(email, password) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',  // Required to receive cookies over HTTPS
         body: JSON.stringify({ email, password }),
     });
 
@@ -61,9 +63,18 @@ async function login(email, password) {
 }
 
 /**
- * Logout user - clear session data
+ * Logout user - clear session data and cookies
  */
-function logout() {
+async function logout() {
+    try {
+        // Call backend to clear auth cookies
+        await fetch(`${API_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (err) {
+        console.warn('Failed to call logout endpoint', err);
+    }
     localStorage.removeItem('user');
     window.location.href = 'login.html';
 }
@@ -113,17 +124,15 @@ async function pingApi() {
  * Make authenticated API request
  */
 async function apiRequest(endpoint, options = {}) {
-    const token = getAccessToken();
-
     const headers = {
         'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
     };
 
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers,
+        credentials: 'include',  // Send cookies for authentication
     });
 
     const data = await response.json().catch(() => ({}));
