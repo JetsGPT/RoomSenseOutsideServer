@@ -4,55 +4,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Team - RoomSense</title>
+    <meta name="description" content="Meet the RoomSense team - the people behind the intelligent IoT sensor box.">
+    <meta name="theme-color" content="#79BC9E">
+    <title>Team - RoomSense</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2379BC9E' stroke-width='2'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>">
 </head>
 
 <body>
     <!-- Header injected by main.js -->
-    <main class="container py-8 animate-fade-in">
-        <h1 class="mb-4 text-center">Meet the RoomSense Outside Crew</h1>
-        <div class="flex gap-8 justify-center" style="flex-wrap: wrap; margin-top: 1.5rem;">
-            <div class="card text-center" style="flex: 1; min-width: 250px; max-width: 300px;">
-                <div style="width: 100px; height: 100px; background-color: var(--muted); border-radius: 50%; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    👨‍💻
-                </div>
-                <h3>Tobias Nesvadba</h3>
-                <p class="text-primary" style="font-size: 0.875rem; margin-bottom: 1rem;">Team Lead & Coordinator</p>
-                <p style="font-size: 0.875rem;">Oversees the project structure and keeps delivery on track.</p>
-            </div>
 
-            <div class="card text-center" style="flex: 1; min-width: 250px; max-width: 300px;">
-                <div style="width: 100px; height: 100px; background-color: var(--muted); border-radius: 50%; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    🛠️
-                </div>
-                <h3>Eray Yesildag</h3>
-                <p class="text-primary" style="font-size: 0.875rem; margin-bottom: 1rem;">Implementation Lead</p>
-                <p style="font-size: 0.875rem;">Turns product ideas into reliable hardware and firmware.</p>
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" style="min-height: 40vh;">
+            <div class="hero-bg"></div>
+            <div class="hero-orb hero-orb-3" style="opacity: 0.2;"></div>
+            <div class="container relative z-10 text-center py-12">
+                <h1 class="hero-title animate-fade-in-up">Our Team</h1>
+                <p class="text-xl text-muted max-w-2xl mx-auto animate-fade-in-up stagger-1">
+                    The passionate people behind RoomSense
+                </p>
             </div>
+        </section>
 
-            <div class="card text-center" style="flex: 1; min-width: 250px; max-width: 300px;">
-                <div style="width: 100px; height: 100px; background-color: var(--muted); border-radius: 50%; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    🌱
+        <!-- Team Section -->
+        <section class="container py-12">
+            <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                <!-- Team Member 1 - Tobias -->
+                <div class="card text-center animate-fade-in-up stagger-1">
+                    <div class="user-avatar mx-auto mb-4" style="width: 5rem; height: 5rem; font-size: 2rem;">
+                        T
+                    </div>
+                    <h3 class="mb-1">Tobias Nesvadba</h3>
+                    <p class="text-primary text-sm mb-3">Team Lead</p>
+                    <p class="text-muted text-sm">
+                        Leading the RoomSense project with a focus on architecture, strategy, and full-stack development.
+                    </p>
                 </div>
-                <h3>Julian Prakisch</h3>
-                <p class="text-primary" style="font-size: 0.875rem; margin-bottom: 1rem;">Sustainability Advocate</p>
-                <p style="font-size: 0.875rem;">Shapes the vision and keeps the product eco-conscious.</p>
-            </div>
 
-            <div class="card text-center" style="flex: 1; min-width: 250px; max-width: 300px;">
-                <div style="width: 100px; height: 100px; background-color: var(--muted); border-radius: 50%; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    🎨
+                <!-- Team Member 2 - Eray -->
+                <div class="card text-center animate-fade-in-up stagger-2">
+                    <div class="user-avatar mx-auto mb-4" style="width: 5rem; height: 5rem; font-size: 2rem;">
+                        E
+                    </div>
+                    <h3 class="mb-1">Eray Yesildag</h3>
+                    <p class="text-primary text-sm mb-3">Developer</p>
+                    <p class="text-muted text-sm">
+                        Contributing to the development of RoomSense with expertise in software engineering.
+                    </p>
                 </div>
-                <h3>Sebastian Romano</h3>
-                <p class="text-primary" style="font-size: 0.875rem; margin-bottom: 1rem;">Product Design</p>
-                <p style="font-size: 0.875rem;">Brings creativity and a user-first perspective to the experience.</p>
+
+                <!-- Team Member 3 - Julian -->
+                <div class="card text-center animate-fade-in-up stagger-3">
+                    <div class="user-avatar mx-auto mb-4" style="width: 5rem; height: 5rem; font-size: 2rem;">
+                        J
+                    </div>
+                    <h3 class="mb-1">Julian Irschik</h3>
+                    <p class="text-primary text-sm mb-3">Developer</p>
+                    <p class="text-muted text-sm">
+                        Building innovative IoT solutions and helping shape the RoomSense ecosystem.
+                    </p>
+                </div>
+
+                <!-- Team Member 4 - Sebastian -->
+                <div class="card text-center animate-fade-in-up stagger-4">
+                    <div class="user-avatar mx-auto mb-4" style="width: 5rem; height: 5rem; font-size: 2rem;">
+                        S
+                    </div>
+                    <h3 class="mb-1">Sebastian Romano</h3>
+                    <p class="text-primary text-sm mb-3">Developer</p>
+                    <p class="text-muted text-sm">
+                        Driving development efforts and bringing technical excellence to the RoomSense platform.
+                    </p>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Values Section -->
+        <section class="container py-12">
+            <h2 class="text-center mb-2">Our Values</h2>
+            <p class="text-center text-muted mb-8">What drives us every day</p>
+
+            <div class="flex gap-8 flex-wrap">
+                <div class="card animate-fade-in-up stagger-1" style="flex: 1; min-width: 280px;">
+                    <div class="feature-icon mb-4">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                            </polygon>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">Innovation</h4>
+                    <p class="text-muted text-sm">
+                        We constantly push boundaries to create cutting-edge IoT solutions that make a real difference.
+                    </p>
+                </div>
+
+                <div class="card animate-fade-in-up stagger-2" style="flex: 1; min-width: 280px;">
+                    <div class="feature-icon mb-4">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">Security</h4>
+                    <p class="text-muted text-sm">
+                        Your data privacy and security are our top priorities. We build with protection in mind.
+                    </p>
+                </div>
+
+                <div class="card animate-fade-in-up stagger-3" style="flex: 1; min-width: 280px;">
+                    <div class="feature-icon mb-4">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">User Focus</h4>
+                    <p class="text-muted text-sm">
+                        Every feature we build starts with user needs. Simple, intuitive, and effective.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact CTA -->
+        <section class="container py-12">
+            <div class="card card-glass text-center p-8">
+                <h2 class="mb-4">Want to Join Us?</h2>
+                <p class="text-muted max-w-xl mx-auto mb-6">
+                    We're always looking for talented individuals who share our passion for IoT and environmental
+                    technology.
+                </p>
+                <a href="mailto:hello@roomsense.io" class="btn btn-primary btn-lg">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    Contact Us
+                </a>
+            </div>
+        </section>
     </main>
 
+    <!-- Footer injected by main.js -->
+    <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
-
 </body>
 
 </html>

@@ -4,59 +4,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - RoomSense</title>
+    <meta name="description" content="Learn about RoomSense - the intelligent IoT sensor box for environmental monitoring.">
+    <meta name="theme-color" content="#79BC9E">
+    <title>About - RoomSense</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2379BC9E' stroke-width='2'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>">
 </head>
 
 <body>
     <!-- Header injected by main.js -->
 
-    <main class="container py-8 animate-fade-in">
-        <div class="card mt-4">
-            <h2>Our Mission</h2>
-            <p class="mt-4">
-                Residential buildings, schools, and homes frequently suffer from the absence of a system that delivers
-                precise, real-time environmental and occupancy data.
-                RoomSense equips users with actionable insights, enabling them to formulate their own automation or
-                management strategies.
-            </p>
-            <p class="mt-4">
-                By delivering precise and scalable data collection, we lay the groundwork for more informed
-                decision-making in buildings.
-            </p>
-        </div>
-
-        <div class="card mt-4">
-            <h2>Market Analysis</h2>
-            <p class="mt-4">
-                <strong>Total Addressable Market (TAM):</strong> There are around 601,300 small businesses and 4.12
-                million private households in Austria alone.
-                The smart home market is expected to expand by ~82% yearly, reaching 2.6 million households by 2028.
-            </p>
-            <p class="mt-4">
-                <strong>The Need:</strong> Many companies struggle with digitization and rising energy costs. RoomSense
-                provides a solution to optimize energy usage and improve environmental conditions.
-            </p>
-        </div>
-
-        <div class="flex gap-8 mt-4" style="flex-wrap: wrap;">
-            <div class="card" style="flex: 1;">
-                <h3>USP (Unique Selling Point)</h3>
-                <p class="mt-4">
-                    A modular, user-friendly sensor box that combines multiple environmental sensors (Air Quality, Temp,
-                    Humidity, Noise, Occupancy) with an open API and customizable automation events.
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" style="min-height: 50vh;">
+            <div class="hero-bg"></div>
+            <div class="hero-orb hero-orb-2" style="opacity: 0.2;"></div>
+            <div class="container relative z-10 text-center py-16">
+                <h1 class="hero-title animate-fade-in-up">About RoomSense</h1>
+                <p class="text-xl text-muted max-w-2xl mx-auto animate-fade-in-up stagger-1">
+                    Empowering smart spaces through intelligent environmental monitoring
                 </p>
             </div>
-            <div class="card" style="flex: 1;">
-                <h3>Target Audience</h3>
-                <p class="mt-4">
-                    From tech-savvy developers who want to code their own automations, to business owners needing energy
-                    insights, to homeowners wanting a healthier living space.
-                </p>
+        </section>
+
+        <!-- Mission Section -->
+        <section class="container py-12">
+            <div class="flex gap-8 flex-wrap items-center">
+                <div class="card animate-fade-in-up" style="flex: 1; min-width: 300px;">
+                    <div class="feature-icon mb-4">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="6"></circle>
+                            <circle cx="12" cy="12" r="2"></circle>
+                        </svg>
+                    </div>
+                    <h2 class="mb-4">Our Mission</h2>
+                    <p class="text-muted">
+                        RoomSense aims to bridge the gap between buildings and their occupants by providing
+                        precise, real-time environmental data. We believe that understanding your environment
+                        is the first step to improving it.
+                    </p>
+                </div>
+                <div class="card animate-fade-in-up stagger-1" style="flex: 1; min-width: 300px;">
+                    <div class="feature-icon mb-4">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                    </div>
+                    <h2 class="mb-4">Our Vision</h2>
+                    <p class="text-muted">
+                        We envision a world where every building is smart, efficient, and comfortable.
+                        Through our IoT solutions, we're making this vision a reality—one room at a time.
+                    </p>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- What We Measure -->
+        <section class="container py-12">
+            <h2 class="text-center mb-2">What We Measure</h2>
+            <p class="text-center text-muted mb-8">Comprehensive environmental monitoring for complete awareness</p>
+
+            <div class="feature-grid">
+                <div class="feature-card animate-fade-in-up stagger-1">
+                    <div class="feature-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">Temperature</h4>
+                    <p class="text-sm">Precise temperature readings with ±0.5°C accuracy for optimal comfort monitoring.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-fade-in-up stagger-2">
+                    <div class="feature-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">Humidity</h4>
+                    <p class="text-sm">Track relative humidity levels to prevent mold growth and ensure comfort.</p>
+                </div>
+
+                <div class="feature-card animate-fade-in-up stagger-3">
+                    <div class="feature-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-6 12h8a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">Air Quality</h4>
+                    <p class="text-sm">Monitor CO2, VOCs, and particulate matter for healthier indoor air.</p>
+                </div>
+
+                <div class="feature-card animate-fade-in-up stagger-4">
+                    <div class="feature-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">Noise Levels</h4>
+                    <p class="text-sm">Detect ambient noise levels to identify disturbances and peak quiet hours.</p>
+                </div>
+
+                <div class="feature-card animate-fade-in-up stagger-5">
+                    <div class="feature-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h4 class="mb-2">Occupancy</h4>
+                    <p class="text-sm">Smart presence detection for energy optimization and space utilization insights.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Stack -->
+        <section class="container py-12">
+            <div class="card card-glass">
+                <h2 class="text-center mb-6">Our Technology Stack</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value text-primary">FastAPI</div>
+                        <div class="stat-label">Backend Framework</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value text-primary">Supabase</div>
+                        <div class="stat-label">Authentication & Database</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value text-primary">WebSocket</div>
+                        <div class="stat-label">Real-time Communication</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value text-primary">REST API</div>
+                        <div class="stat-label">Data Integration</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="container py-12">
+            <div class="text-center">
+                <h2 class="mb-4">Ready to Get Started?</h2>
+                <p class="text-muted max-w-xl mx-auto mb-6">
+                    Join RoomSense today and start monitoring your environment with precision and ease.
+                </p>
+                <div class="flex gap-4 justify-center flex-wrap">
+                    <a href="register.html" class="btn btn-primary btn-lg">Create Account</a>
+                    <a href="team.html" class="btn btn-outline btn-lg">Meet the Team</a>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <!-- Footer injected by main.js -->
+    <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
 </body>
 

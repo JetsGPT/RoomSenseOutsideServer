@@ -3,9 +3,9 @@ from pathlib import Path
 
 if __name__ == "__main__":
     # SSL certificate paths
-    cert_dir = Path(__file__).parent
-    ssl_keyfile = cert_dir / "key.pem"
-    ssl_certfile = cert_dir / "cert.pem"
+    cert_dir = Path(__file__).parent / "certs"
+    ssl_keyfile = cert_dir / "privkey.pem"
+    ssl_certfile = cert_dir / "fullchain.pem"
     
     # Check if certificates exist
     if not ssl_keyfile.exists() or not ssl_certfile.exists():

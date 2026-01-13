@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RoomSense Dashboard - Monitor your connected boxes and sensor data.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#79BC9E">
+    <title>Dashboard - RoomSense</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2379BC9E' stroke-width='2'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>">
+</head>
+
+<body>
+    <!-- Header injected by main.js -->
+
+    <main class="container py-8">
+        <!-- Page Header -->
+        <div class="flex justify-between items-center flex-wrap gap-4 mb-8 animate-fade-in">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Dashboard</h1>
+                <p class="text-muted">Welcome back! Monitor your connected boxes and sensor data.</p>
+            </div>
+            <div class="flex gap-3">
+                <button id="refresh-btn" class="btn btn-outline">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid mb-8 animate-fade-in-up">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-api">
+                    <span class="spinner"></span>
+                </div>
+                <div class="stat-label">API Status</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-boxes">-</div>
+                <div class="stat-label">Connected Boxes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-user">-</div>
+                <div class="stat-label">Logged In As</div>
+            </div>
+        </div>
+
+        <!-- User Profile Card -->
+        <div class="card mb-8 animate-fade-in-up stagger-1">
+            <div class="flex items-center gap-4 flex-wrap">
+                <div class="user-avatar" style="width: 4rem; height: 4rem; font-size: 1.5rem;">
+                    <span id="user-avatar-letter">?</span>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <h3 id="user-name" class="mb-1">Loading...</h3>
+                    <p id="user-email" class="text-muted text-sm">Loading...</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="btn btn-outline btn-sm" onclick="logout()">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connected Boxes Section -->
+        <div class="mb-8 animate-fade-in-up stagger-2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Connected Boxes</h2>
+                <span class="badge badge-outline" id="boxes-count">0 boxes</span>
+            </div>
+
+            <div id="boxes-container">
+                <!-- Loading State -->
+                <div id="boxes-loading" class="card text-center py-8">
+                    <div class="spinner spinner-lg mx-auto mb-4"></div>
+                    <p class="text-muted">Loading connected boxes...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="boxes-empty" class="card text-center py-8 hidden">
+                    <svg class="icon-lg mx-auto mb-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" style="width: 3rem; height: 3rem;">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                        </path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <h3 class="mb-2">No Boxes Connected</h3>
+                    <p class="text-muted mb-4">Your sensor boxes will appear here once connected.</p>
+                    <a href="about.html" class="btn btn-outline">Learn How to Connect</a>
+                </div>
+
+                <!-- Boxes Grid -->
+                <div id="boxes-grid" class="feature-grid hidden">
+                    <!-- Boxes will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- API Proxy Tester -->
+        <div class="card animate-fade-in-up stagger-3">
+            <h3 class="mb-4">API Proxy Tester</h3>
+            <p class="text-muted text-sm mb-4">Send requests through the proxy to connected boxes (for debugging).</p>
+
+            <form id="proxy-form" class="flex-col gap-4">
+                <div class="flex gap-4 flex-wrap">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label class="label">Box ID</label>
+                        <input type="text" id="proxy-box-id" class="input" placeholder="box-uuid" required>
+                    </div>
+                    <div style="flex: 2; min-width: 200px;">
+                        <label class="label">Path</label>
+                        <input type="text" id="proxy-path" class="input" placeholder="/api/sensors" required>
+                    </div>
+                    <div style="min-width: 120px;">
+                        <label class="label">Method</label>
+                        <select id="proxy-method" class="input">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="label">Request Body (JSON, optional)</label>
+                    <textarea id="proxy-body" class="input" rows="3" placeholder='{"key": "value"}'
+                        style="height: auto; resize: vertical;"></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" id="proxy-submit" class="btn btn-primary">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        Send Request
+                    </button>
+                    <button type="button" id="proxy-clear" class="btn btn-ghost">Clear</button>
+                </div>
+            </form>
+
+            <!-- Response Area -->
+            <div id="proxy-response" class="mt-4 hidden">
+                <label class="label">Response</label>
+                <div id="proxy-response-content" class="card" style="background: var(--muted); font-family: monospace; font-size: 0.875rem; 
+                            overflow-x: auto; white-space: pre-wrap; word-break: break-all;">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer injected by main.js -->
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getStoredUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            initDashboard(user);
+        });
+
+        async function initDashboard(user) {
+            // Update user info
+            updateUserInfo(user);
+
+            // Check API status
+            await checkApiStatus();
+
+            // Load boxes (placeholder - no endpoint for listing boxes)
+            loadBoxes();
+        }
+
+        function updateUserInfo(user) {
+            const meta = user?.user?.user_metadata || {};
+            const email = user?.user?.email || 'Unknown';
+            const username = meta.username || email.split('@')[0];
+
+            document.getElementById('user-name').textContent = username;
+            document.getElementById('user-email').textContent = email;
+            document.getElementById('user-avatar-letter').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('stat-user').textContent = username;
+            document.getElementById('stat-user').style.fontSize = '1rem';
+        }
+
+        async function checkApiStatus() {
+            const statApi = document.getElementById('stat-api');
+            try {
+                const result = await pingApi();
+                if (result.ok) {
+                    statApi.innerHTML = '<span class="status-dot status-online"></span> Online';
+                    statApi.style.fontSize = '1rem';
+                } else {
+                    statApi.innerHTML = '<span class="status-dot status-offline"></span> Offline';
+                    statApi.style.fontSize = '1rem';
+                }
+            } catch (err) {
+                statApi.innerHTML = '<span class="status-dot status-offline"></span> Offline';
+                statApi.style.fontSize = '1rem';
+            }
+        }
+
+        function loadBoxes() {
+            // Hide loading, show empty state
+            // Note: There's no API endpoint to list connected boxes
+            // This would need to be added to the backend
+            document.getElementById('boxes-loading').classList.add('hidden');
+            document.getElementById('boxes-empty').classList.remove('hidden');
+            document.getElementById('stat-boxes').textContent = '0';
+        }
+
+        // Refresh button
+        document.getElementById('refresh-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('refresh-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Refreshing...';
+
+            await checkApiStatus();
+            loadBoxes();
+
+            btn.disabled = false;
+            btn.innerHTML = `
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Refresh
+            `;
+        });
+
+        // Proxy form
+        const proxyForm = document.getElementById('proxy-form');
+        const proxyResponse = document.getElementById('proxy-response');
+        const proxyResponseContent = document.getElementById('proxy-response-content');
+
+        proxyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const boxId = document.getElementById('proxy-box-id').value.trim();
+            const path = document.getElementById('proxy-path').value.trim();
+            const method = document.getElementById('proxy-method').value;
+            const body = document.getElementById('proxy-body').value.trim();
+
+            const submitBtn = document.getElementById('proxy-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+
+            try {
+                const url = `${API_URL}/proxy/${boxId}${path.startsWith('/') ? path : '/' + path}`;
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+
+                if (body && method !== 'GET') {
+                    options.body = body;
+                }
+
+                const response = await fetch(url, options);
+                const data = await response.text();
+
+                proxyResponse.classList.remove('hidden');
+                proxyResponseContent.textContent = `Status: ${response.status}\n\n${data}`;
+                proxyResponseContent.style.color = response.ok ? 'var(--foreground)' : 'var(--destructive)';
+            } catch (error) {
+                proxyResponse.classList.remove('hidden');
+                proxyResponseContent.textContent = `Error: ${error.message}`;
+                proxyResponseContent.style.color = 'var(--destructive)';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Send Request
+                `;
+            }
+        });
+
+        document.getElementById('proxy-clear').addEventListener('click', () => {
+            document.getElementById('proxy-box-id').value = '';
+            document.getElementById('proxy-path').value = '';
+            document.getElementById('proxy-body').value = '';
+            proxyResponse.classList.add('hidden');
+        });
+    </script>
+</body>
+
+</html>
