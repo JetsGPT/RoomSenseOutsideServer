@@ -1,17 +1,29 @@
-from typing import Dict
+from typing import Dict, Optional, List
 import asyncio
 import uuid
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Response, Request, Depends, Cookie
+import logging
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Response, Request, Depends, Cookie, Header
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
+
+from notification_forwarders import NotificationPriority, NotificationPayload, ForwardResult, notification_router
 from supabase_code import initialize_supabase, create_user, login_user, check_username_exists, check_if_box_exists, \
     update_box_status, validate_access_token, get_box_owner, verify_unclaimed_server_password, claim_box, \
     find_user_by_username_or_email, assign_server_to_user, check_server_assignment_exists, \
     remove_server_assignment, get_server_assignments, get_user_servers, request_email_change, \
-    verify_email_change_token
+    verify_email_change_token, get_server_notification_settings, get_global_notification_config, log_notification, \
+    delete_global_notification_config, set_server_notification_settings, get_notification_logs, \
+    register_server_identity_token, get_all_global_notification_configs, set_global_notification_config, \
+    verify_server_identity
 import json
 
 from fastapi.middleware.cors import CORSMiddleware
+
+import os
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -58,6 +70,75 @@ class RemoveAssignmentRequest(BaseModel):
 
 class EmailChangeRequest(BaseModel):
     new_email: str
+
+
+# =============================================================================
+# Notification System Models
+# =============================================================================
+
+class NotificationRelayRequest(BaseModel):
+    """Request payload for relaying notifications from Local Servers."""
+    target: str  # Target for the notification (e.g., ntfy topic, email address)
+    title: str  # Notification title
+    message: str  # Notification message body
+    priority: str = "default"  # Priority: min, low, default, high, urgent
+    provider: str = "ntfy"  # Notification provider: ntfy, email, sms
+    tags: Optional[List[str]] = None  # Optional tags for the notification
+    click_url: Optional[str] = None  # URL to open when notification is clicked
+    attach_url: Optional[str] = None  # URL of attachment
+    extra: Optional[Dict] = None  # Additional provider-specific options
+
+
+class GlobalConfigRequest(BaseModel):
+    """Request for setting global notification configuration."""
+    config_key: str  # Configuration key (e.g., 'ntfy_base_url', 'dnd_schedule')
+    config_value: Dict  # Configuration value as JSON object
+    description: Optional[str] = None  # Description of this configuration
+
+
+class ServerNotificationSettingsRequest(BaseModel):
+    """Request for setting server-specific notification settings."""
+    ntfy_enabled: Optional[bool] = True
+    ntfy_base_url: Optional[str] = None
+    ntfy_default_topic: Optional[str] = None
+    email_enabled: Optional[bool] = False
+    sms_enabled: Optional[bool] = False
+    dnd_enabled: Optional[bool] = False
+    dnd_start: Optional[str] = None  # e.g., "22:00"
+    dnd_end: Optional[str] = None    # e.g., "07:00"
+
+
+# Shared secret for relay authentication (can also be loaded from env)
+RELAY_SHARED_SECRET = os.getenv("RELAY_SHARED_SECRET", None)
+
+
+async def verify_relay_authorization(
+    x_server_id: str = Header(None, alias="X-Server-ID"),
+    x_identity_token: str = Header(None, alias="X-Identity-Token"),
+    x_relay_secret: str = Header(None, alias="X-Relay-Secret")
+):
+    """
+    Verify that the request is from an authorized Local Server.
+    Supports both identity token verification and shared secret authentication.
+    """
+    # Check shared secret first (simpler authentication)
+    if RELAY_SHARED_SECRET and x_relay_secret:
+        if x_relay_secret == RELAY_SHARED_SECRET:
+            return {"auth_method": "shared_secret", "server_id": x_server_id}
+
+    # Check server identity token
+    if x_server_id and x_identity_token:
+        if verify_server_identity(supabase, x_server_id, x_identity_token):
+            return {"auth_method": "identity_token", "server_id": x_server_id}
+
+    raise HTTPException(
+        status_code=401,
+        detail={
+            "error": "unauthorized",
+            "message": "Invalid or missing server authentication credentials"
+        }
+    )
+
 
 async def get_current_user(access_token: str = Cookie(None)):
     if not access_token:
@@ -562,3 +643,374 @@ async def get_user_servers_endpoint(current_user = Depends(get_current_user)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# Notification Relay Endpoints (for Local Servers)
+# =============================================================================
+
+@app.post("/api/v1/relay/send")
+async def relay_notification(
+    request: NotificationRelayRequest,
+    auth_info: dict = Depends(verify_relay_authorization)
+):
+    """
+    Relay endpoint for Local Servers to send notifications through external providers.
+
+    This endpoint receives notification payloads from authenticated Local Servers
+    and forwards them to the appropriate external provider (ntfy, email, SMS, etc.).
+
+    Authentication: Requires either X-Server-ID + X-Identity-Token headers,
+    or X-Relay-Secret header with the shared secret.
+    """
+    server_id = auth_info.get("server_id", "unknown")
+
+    try:
+        # Map string priority to enum
+        priority_map = {
+            "min": NotificationPriority.MIN,
+            "low": NotificationPriority.LOW,
+            "default": NotificationPriority.DEFAULT,
+            "high": NotificationPriority.HIGH,
+            "urgent": NotificationPriority.URGENT,
+        }
+        priority = priority_map.get(request.priority.lower(), NotificationPriority.DEFAULT)
+
+        # Build the notification payload
+        payload = NotificationPayload(
+            target=request.target,
+            title=request.title,
+            message=request.message,
+            priority=priority,
+            tags=request.tags,
+            click_url=request.click_url,
+            attach_url=request.attach_url,
+            extra=request.extra
+        )
+
+        # Get provider configuration
+        # First check server-specific settings, then fall back to global config
+        config = {}
+
+        server_settings = get_server_notification_settings(supabase, server_id)
+        if server_settings:
+            if request.provider == "ntfy":
+                if server_settings.get("ntfy_base_url"):
+                    config["base_url"] = server_settings["ntfy_base_url"]
+
+        # Check global config for provider settings
+        global_config = get_global_notification_config(supabase, f"{request.provider}_config")
+        if global_config:
+            config_value = global_config.get("config_value", {})
+            # Merge global config (server-specific takes precedence)
+            for key, value in config_value.items():
+                if key not in config:
+                    config[key] = value
+
+        # Forward to the notification router
+        result: ForwardResult = await notification_router.route(
+            provider=request.provider,
+            payload=payload,
+            config=config
+        )
+
+        # Log the notification attempt
+        log_notification(
+            supabase=supabase,
+            server_id=server_id,
+            provider=request.provider,
+            target=request.target,
+            title=request.title,
+            message=request.message,
+            priority=request.priority,
+            success=result.success,
+            status_code=result.status_code,
+            error_message=result.error_message,
+            response_data=result.response_data
+        )
+
+        if result.success:
+            logger.info(f"✅ Notification relayed: {request.provider} -> {request.target} (server: {server_id})")
+            return {
+                "status": "success",
+                "message": "Notification sent successfully",
+                "provider": result.provider,
+                "target": result.target,
+                "status_code": result.status_code
+            }
+        else:
+            logger.warning(f"⚠️ Notification relay failed: {result.error_message} (server: {server_id})")
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "error": "relay_failed",
+                    "message": result.error_message,
+                    "provider": result.provider
+                }
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error relaying notification: {e}")
+
+        # Still log the failed attempt
+        log_notification(
+            supabase=supabase,
+            server_id=server_id,
+            provider=request.provider,
+            target=request.target,
+            title=request.title,
+            message=request.message,
+            priority=request.priority,
+            success=False,
+            error_message=str(e)
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "internal_error", "message": str(e)}
+        )
+
+
+@app.get("/api/v1/relay/providers")
+async def list_notification_providers():
+    """List all available notification providers."""
+    return {
+        "status": "success",
+        "providers": notification_router.list_providers()
+    }
+
+
+# =============================================================================
+# Server Identity Token Management
+# =============================================================================
+
+@app.post("/api/v1/server/register-identity")
+async def register_server_identity(
+    server_id: str,
+    identity_token: str,
+    auth_info: dict = Depends(verify_relay_authorization)
+):
+    """
+    Register or update a server's identity token.
+    Used during Local Server initialization.
+    """
+    success = register_server_identity_token(supabase, server_id, identity_token)
+
+    if success:
+        return {
+            "status": "success",
+            "message": "Server identity token registered"
+        }
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "registration_failed", "message": "Failed to register identity token"}
+        )
+
+
+# =============================================================================
+# Global Notification Configuration Endpoints
+# =============================================================================
+
+@app.get("/api/v1/config/global")
+async def get_all_global_configs(current_user = Depends(get_current_user)):
+    """Get all global notification configuration values."""
+    configs = get_all_global_notification_configs(supabase)
+    return {
+        "status": "success",
+        "configs": configs
+    }
+
+
+@app.get("/api/v1/config/global/{config_key}")
+async def get_global_config(config_key: str, current_user = Depends(get_current_user)):
+    """Get a specific global notification configuration."""
+    config = get_global_notification_config(supabase, config_key)
+
+    if config:
+        return {
+            "status": "success",
+            "config": config
+        }
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": "not_found", "message": f"Configuration '{config_key}' not found"}
+        )
+
+
+@app.post("/api/v1/config/global")
+async def set_global_config(
+    request: GlobalConfigRequest,
+    current_user = Depends(get_current_user)
+):
+    """
+    Set or update a global notification configuration.
+
+    Example config_keys:
+    - ntfy_config: {"base_url": "https://ntfy.sh", "auth_token": "..."}
+    - dnd_schedule: {"enabled": true, "start": "22:00", "end": "07:00"}
+    - email_config: {"smtp_host": "...", "smtp_port": 587, "sender_email": "..."}
+    """
+    success = set_global_notification_config(
+        supabase,
+        request.config_key,
+        request.config_value,
+        request.description
+    )
+
+    if success:
+        return {
+            "status": "success",
+            "message": f"Configuration '{request.config_key}' saved"
+        }
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "save_failed", "message": "Failed to save configuration"}
+        )
+
+
+@app.delete("/api/v1/config/global/{config_key}")
+async def delete_global_config(config_key: str, current_user = Depends(get_current_user)):
+    """Delete a global notification configuration."""
+    success = delete_global_notification_config(supabase, config_key)
+
+    if success:
+        return {
+            "status": "success",
+            "message": f"Configuration '{config_key}' deleted"
+        }
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "delete_failed", "message": "Failed to delete configuration"}
+        )
+
+
+# =============================================================================
+# Server-Specific Notification Settings
+# =============================================================================
+
+@app.get("/api/v1/servers/{server_id}/notification-settings")
+async def get_server_notification_settings_endpoint(
+    server_id: str,
+    current_user = Depends(get_current_user)
+):
+    """Get notification settings for a specific server."""
+    # Verify user has access to this server
+    owner_id = get_box_owner(supabase, server_id)
+    if owner_id != current_user.id:
+        # Check if user is assigned to this server
+        if not check_server_assignment_exists(supabase, server_id, current_user.id):
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "forbidden", "message": "You don't have access to this server"}
+            )
+
+    settings = get_server_notification_settings(supabase, server_id)
+
+    return {
+        "status": "success",
+        "server_id": server_id,
+        "settings": settings or {}
+    }
+
+
+@app.post("/api/v1/servers/{server_id}/notification-settings")
+async def set_server_notification_settings_endpoint(
+    server_id: str,
+    request: ServerNotificationSettingsRequest,
+    current_user = Depends(get_current_user)
+):
+    """Set notification settings for a specific server. Only the owner can modify settings."""
+    # Verify user is the owner
+    owner_id = get_box_owner(supabase, server_id)
+    if owner_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail={"error": "not_owner", "message": "Only the server owner can modify notification settings"}
+        )
+
+    settings_dict = request.model_dump(exclude_none=True)
+    success = set_server_notification_settings(supabase, server_id, settings_dict)
+
+    if success:
+        return {
+            "status": "success",
+            "message": "Notification settings saved",
+            "server_id": server_id
+        }
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "save_failed", "message": "Failed to save notification settings"}
+        )
+
+
+# =============================================================================
+# Notification Logs Endpoints
+# =============================================================================
+
+@app.get("/api/v1/notifications/logs")
+async def get_notification_logs_endpoint(
+    server_id: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_user = Depends(get_current_user)
+):
+    """
+    Get notification logs. If server_id is provided, only logs for that server are returned.
+    Requires authentication and ownership/assignment verification.
+    """
+    if server_id:
+        # Verify user has access to this server
+        owner_id = get_box_owner(supabase, server_id)
+        if owner_id != current_user.id:
+            if not check_server_assignment_exists(supabase, server_id, current_user.id):
+                raise HTTPException(
+                    status_code=403,
+                    detail={"error": "forbidden", "message": "You don't have access to this server"}
+                )
+
+    logs = get_notification_logs(supabase, server_id, limit, offset)
+
+    return {
+        "status": "success",
+        "logs": logs,
+        "count": len(logs),
+        "limit": limit,
+        "offset": offset
+    }
+
+
+@app.get("/api/v1/servers/{server_id}/notifications/logs")
+async def get_server_notification_logs(
+    server_id: str,
+    limit: int = 100,
+    offset: int = 0,
+    current_user = Depends(get_current_user)
+):
+    """Get notification logs for a specific server."""
+    # Verify user has access to this server
+    owner_id = get_box_owner(supabase, server_id)
+    if owner_id != current_user.id:
+        if not check_server_assignment_exists(supabase, server_id, current_user.id):
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "forbidden", "message": "You don't have access to this server"}
+            )
+
+    logs = get_notification_logs(supabase, server_id, limit, offset)
+
+    return {
+        "status": "success",
+        "server_id": server_id,
+        "logs": logs,
+        "count": len(logs),
+        "limit": limit,
+        "offset": offset
+    }
+

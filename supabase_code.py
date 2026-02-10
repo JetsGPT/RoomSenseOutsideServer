@@ -330,3 +330,215 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
     except Exception as e:
         print(f"Error getting user servers: {e}")
         return {"owned": [], "assigned": []}
+
+
+# =============================================================================
+# Notification System Functions
+# =============================================================================
+
+def verify_server_identity(supabase: Client, server_id: str, identity_token: str) -> bool:
+    """
+    Verify that a server identity token is valid.
+    This is used to authenticate relay requests from Local Servers.
+    """
+    try:
+        response = supabase.table("connected_servers").select(
+            "id, identity_token"
+        ).eq("id", server_id).execute()
+
+        if response.data and len(response.data) > 0:
+            stored_token = response.data[0].get("identity_token")
+            return stored_token == identity_token
+        return False
+    except Exception as e:
+        print(f"Error verifying server identity: {e}")
+        return False
+
+
+def register_server_identity_token(supabase: Client, server_id: str, identity_token: str) -> bool:
+    """Register or update a server's identity token."""
+    try:
+        supabase.table("connected_servers").update({
+            "identity_token": identity_token
+        }).eq("id", server_id).execute()
+        return True
+    except Exception as e:
+        print(f"Error registering server identity token: {e}")
+        return False
+
+
+def log_notification(
+    supabase: Client,
+    server_id: str,
+    provider: str,
+    target: str,
+    title: str,
+    message: str,
+    priority: str,
+    success: bool,
+    status_code: Optional[int] = None,
+    error_message: Optional[str] = None,
+    response_data: Optional[dict] = None
+) -> Optional[dict]:
+    """
+    Log a notification relay attempt to the database for audit purposes.
+    """
+    try:
+        log_entry = {
+            "server_id": server_id,
+            "provider": provider,
+            "target": target,
+            "title": title,
+            "message": message,
+            "priority": priority,
+            "success": success,
+            "status_code": status_code,
+            "error_message": error_message,
+            "response_data": response_data,
+            "created_at": "now()"
+        }
+
+        response = supabase.table("notification_logs").insert(log_entry).execute()
+
+        if response.data and len(response.data) > 0:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error logging notification: {e}")
+        return None
+
+
+def get_notification_logs(
+    supabase: Client,
+    server_id: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0
+) -> list:
+    """
+    Retrieve notification logs, optionally filtered by server_id.
+    """
+    try:
+        query = supabase.table("notification_logs").select("*").order(
+            "created_at", desc=True
+        ).limit(limit).offset(offset)
+
+        if server_id:
+            query = query.eq("server_id", server_id)
+
+        response = query.execute()
+        return response.data if response.data else []
+    except Exception as e:
+        print(f"Error getting notification logs: {e}")
+        return []
+
+
+def get_global_notification_config(supabase: Client, config_key: str) -> Optional[dict]:
+    """
+    Get a global notification configuration value.
+    """
+    try:
+        response = supabase.table("global_notification_config").select(
+            "*"
+        ).eq("config_key", config_key).execute()
+
+        if response.data and len(response.data) > 0:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting global config: {e}")
+        return None
+
+
+def set_global_notification_config(
+    supabase: Client,
+    config_key: str,
+    config_value: dict,
+    description: Optional[str] = None
+) -> bool:
+    """
+    Set or update a global notification configuration value.
+    Uses upsert to create or update the config entry.
+    """
+    try:
+        data = {
+            "config_key": config_key,
+            "config_value": config_value,
+            "description": description,
+            "updated_at": "now()"
+        }
+
+        supabase.table("global_notification_config").upsert(
+            data, on_conflict="config_key"
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"Error setting global config: {e}")
+        return False
+
+
+def get_all_global_notification_configs(supabase: Client) -> list:
+    """
+    Get all global notification configuration values.
+    """
+    try:
+        response = supabase.table("global_notification_config").select("*").execute()
+        return response.data if response.data else []
+    except Exception as e:
+        print(f"Error getting all global configs: {e}")
+        return []
+
+
+def delete_global_notification_config(supabase: Client, config_key: str) -> bool:
+    """
+    Delete a global notification configuration value.
+    """
+    try:
+        supabase.table("global_notification_config").delete().eq(
+            "config_key", config_key
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"Error deleting global config: {e}")
+        return False
+
+
+def get_server_notification_settings(supabase: Client, server_id: str) -> Optional[dict]:
+    """
+    Get notification settings for a specific server.
+    """
+    try:
+        response = supabase.table("server_notification_settings").select(
+            "*"
+        ).eq("server_id", server_id).execute()
+
+        if response.data and len(response.data) > 0:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting server notification settings: {e}")
+        return None
+
+
+def set_server_notification_settings(
+    supabase: Client,
+    server_id: str,
+    settings: dict
+) -> bool:
+    """
+    Set or update notification settings for a specific server.
+    """
+    try:
+        data = {
+            "server_id": server_id,
+            **settings,
+            "updated_at": "now()"
+        }
+
+        supabase.table("server_notification_settings").upsert(
+            data, on_conflict="server_id"
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"Error setting server notification settings: {e}")
+        return False
+
