@@ -7,6 +7,7 @@ import Terms from './pages/Terms'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Boxes from './pages/Boxes'
+import Notifications from './pages/Notifications'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="boxes" element={<Boxes />} />
+        <Route path="notifications" element={<Notifications />} />
       </Route>
     </Routes>
   )

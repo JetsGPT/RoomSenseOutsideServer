@@ -100,3 +100,75 @@ export async function pingApi() {
     return { ok: false, error: error.message }
   }
 }
+
+// ─── Notification API ───
+
+export async function getNotificationLogs(serverId = null, limit = 100) {
+  const endpoint = serverId
+    ? `/api/v1/servers/${serverId}/notifications/logs?limit=${limit}`
+    : `/api/v1/notifications/logs?limit=${limit}`
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    headers: { ...getAuthHeaders() },
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(extractError(data.detail, 'Failed to fetch notification logs'))
+  return data
+}
+
+export async function getServerNotificationSettings(serverId) {
+  const response = await fetch(`${API_URL}/api/v1/servers/${serverId}/notification-settings`, {
+    headers: { ...getAuthHeaders() },
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(extractError(data.detail, 'Failed to fetch notification settings'))
+  return data
+}
+
+export async function saveServerNotificationSettings(serverId, settings) {
+  const response = await fetch(`${API_URL}/api/v1/servers/${serverId}/notification-settings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify(settings),
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(extractError(data.detail, 'Failed to save notification settings'))
+  return data
+}
+
+export async function getGlobalConfigs() {
+  const response = await fetch(`${API_URL}/api/v1/config/global`, {
+    headers: { ...getAuthHeaders() },
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(extractError(data.detail, 'Failed to fetch global configs'))
+  return data
+}
+
+export async function saveGlobalConfig(configKey, configValue, description = null) {
+  const response = await fetch(`${API_URL}/api/v1/config/global`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ config_key: configKey, config_value: configValue, description }),
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(extractError(data.detail, 'Failed to save global config'))
+  return data
+}
+
+export async function deleteGlobalConfig(configKey) {
+  const response = await fetch(`${API_URL}/api/v1/config/global/${configKey}`, {
+    method: 'DELETE',
+    headers: { ...getAuthHeaders() },
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(extractError(data.detail, 'Failed to delete global config'))
+  return data
+}
+
+export async function getProviders() {
+  const response = await fetch(`${API_URL}/api/v1/relay/providers`)
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(extractError(data.detail, 'Failed to fetch providers'))
+  return data
+}

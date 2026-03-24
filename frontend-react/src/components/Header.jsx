@@ -51,6 +51,11 @@ function Header() {
               Boxes
             </NavLink>
           )}
+          {isAuthenticated && (
+            <NavLink to="/notifications" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              Notifications
+            </NavLink>
+          )}
           <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             About
           </NavLink>
