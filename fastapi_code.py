@@ -36,6 +36,8 @@ app.add_middleware(
         "http://localhost:8000", "http://127.0.0.1:8000",
         "https://localhost:8000", "https://127.0.0.1:8000",
         "https://localhost:8443", "https://127.0.0.1:8443",
+        "https://roomsense.info", "https://proxy.roomsense.info",
+        "https://proxy.roomsense.info:8443",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -278,7 +280,7 @@ async def proxy_request(box_id: str, path: str, request: Request):
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Proxy error: {str(e)}")
     finally:
-        await pending_requests.pop(request_id, None)
+        pending_requests.pop(request_id, None)
 
 @app.get("/")
 async def read_root():
@@ -417,8 +419,8 @@ async def auth_callback(
     error: str = None,
     error_description: str = None
 ):
-    frontend_success_url = "https://localhost:5173/settings?email_changed=true"
-    frontend_error_url = "https://localhost:5173/settings?email_change_error=true"
+    frontend_success_url = "https://roomsense.info/settings?email_changed=true"
+    frontend_error_url = "https://roomsense.info/settings?email_change_error=true"
 
     if error:
         error_msg = error_description or error
