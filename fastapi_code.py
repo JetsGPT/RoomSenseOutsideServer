@@ -159,22 +159,38 @@ async def get_current_user(access_token: str = Cookie(None)):
 
 
 def set_auth_cookies(response: Response, session, secure: bool = True):
-    response.set_cookie(
-        key="access_token",
-        value=session.access_token,
-        httponly=True,
-        secure=secure,
-        samesite="none" if secure else "lax",
-        max_age=session.expires_in if hasattr(session, 'expires_in') else 3600
-    )
+    cookie_kwargs = {
+        "httponly": True,
+        "secure": secure,
+        "samesite": "none" if secure else "lax",
+    }
+    if secure:
+        # Future-proof cross-site cookies for modern browser third-party cookie policies.
+        cookie_kwargs["partitioned"] = True
+
+    try:
+        response.set_cookie(
+            key="access_token",
+            value=session.access_token,
+            max_age=session.expires_in if hasattr(session, 'expires_in') else 3600,
+            **cookie_kwargs,
+        )
+    except TypeError:
+        # Older Starlette/FastAPI may not support the partitioned attribute yet.
+        cookie_kwargs.pop("partitioned", None)
+        response.set_cookie(
+            key="access_token",
+            value=session.access_token,
+            max_age=session.expires_in if hasattr(session, 'expires_in') else 3600,
+            **cookie_kwargs,
+        )
+
     if hasattr(session, 'refresh_token') and session.refresh_token:
         response.set_cookie(
             key="refresh_token",
             value=session.refresh_token,
-            httponly=True,
-            secure=secure,
-            samesite="none" if secure else "lax",
-            max_age=60 * 60 * 24 * 7
+            max_age=60 * 60 * 24 * 7,
+            **cookie_kwargs,
         )
 
 

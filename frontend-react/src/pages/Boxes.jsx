@@ -22,7 +22,14 @@ function Boxes() {
     setError('')
     try {
       const data = await getBoxes()
-      setBoxes(Array.isArray(data) ? data : data.boxes || [])
+      const payload = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.servers)
+          ? data.servers
+          : Array.isArray(data?.boxes)
+            ? data.boxes
+            : []
+      setBoxes(payload)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -64,7 +71,7 @@ function Boxes() {
         <div className="card text-center">
           <p className="text-muted">Loading boxes...</p>
         </div>
-      ) : boxes.length === 0 ? (
+      ) : !Array.isArray(boxes) || boxes.length === 0 ? (
         <div className="card text-center">
           <h3 className="mb-4">No Boxes Found</h3>
           <p className="text-muted">
@@ -74,8 +81,8 @@ function Boxes() {
         </div>
       ) : (
         <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>
-          {boxes.map((box, index) => (
-            <div 
+          {Array.isArray(boxes) && boxes.map((box, index) => (
+            <div
               key={box.id || box.box_id || index} 
               className="card" 
               style={{ flex: '1 1 300px', minWidth: '280px', maxWidth: '400px' }}

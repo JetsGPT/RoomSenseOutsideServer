@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:8443'
+const API_URL = import.meta.env.VITE_API_URL || 'https://proxy.roomsense.info:8443'
 
 function extractError(detail, fallback) {
   if (!detail) return fallback
@@ -22,6 +22,7 @@ function getAuthHeaders() {
 export async function register(username, email, password) {
   const response = await fetch(`${API_URL}/register`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -41,6 +42,7 @@ export async function register(username, email, password) {
 export async function login(email, password) {
   const response = await fetch(`${API_URL}/login`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -61,6 +63,7 @@ export async function logout() {
   try {
     const response = await fetch(`${API_URL}/logout`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeaders(),
@@ -75,6 +78,7 @@ export async function logout() {
 export async function getBoxes() {
   const response = await fetch(`${API_URL}/api/boxes`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
@@ -109,6 +113,7 @@ export async function getNotificationLogs(serverId = null, limit = 100) {
     : `/api/v1/notifications/logs?limit=${limit}`
 
   const response = await fetch(`${API_URL}${endpoint}`, {
+    credentials: 'include',
     headers: { ...getAuthHeaders() },
   })
   const data = await response.json().catch(() => ({}))
@@ -118,6 +123,7 @@ export async function getNotificationLogs(serverId = null, limit = 100) {
 
 export async function getServerNotificationSettings(serverId) {
   const response = await fetch(`${API_URL}/api/v1/servers/${serverId}/notification-settings`, {
+    credentials: 'include',
     headers: { ...getAuthHeaders() },
   })
   const data = await response.json().catch(() => ({}))
@@ -128,6 +134,7 @@ export async function getServerNotificationSettings(serverId) {
 export async function saveServerNotificationSettings(serverId, settings) {
   const response = await fetch(`${API_URL}/api/v1/servers/${serverId}/notification-settings`, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(settings),
   })
@@ -138,6 +145,7 @@ export async function saveServerNotificationSettings(serverId, settings) {
 
 export async function getGlobalConfigs() {
   const response = await fetch(`${API_URL}/api/v1/config/global`, {
+    credentials: 'include',
     headers: { ...getAuthHeaders() },
   })
   const data = await response.json().catch(() => ({}))
@@ -148,6 +156,7 @@ export async function getGlobalConfigs() {
 export async function saveGlobalConfig(configKey, configValue, description = null) {
   const response = await fetch(`${API_URL}/api/v1/config/global`, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify({ config_key: configKey, config_value: configValue, description }),
   })
@@ -159,6 +168,7 @@ export async function saveGlobalConfig(configKey, configValue, description = nul
 export async function deleteGlobalConfig(configKey) {
   const response = await fetch(`${API_URL}/api/v1/config/global/${configKey}`, {
     method: 'DELETE',
+    credentials: 'include',
     headers: { ...getAuthHeaders() },
   })
   const data = await response.json().catch(() => ({}))
