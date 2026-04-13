@@ -3,11 +3,52 @@ import { Link } from 'react-router-dom'
 import { getBoxes } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
+function normalizeBoxesPayload(data) {
+  if (Array.isArray(data)) return data
+  if (!data || typeof data !== 'object') return []
+
+  if (Array.isArray(data.servers)) return data.servers
+
+  const serversNode = data.servers
+  if (serversNode && typeof serversNode === 'object') {
+    if (Array.isArray(serversNode.owned) || Array.isArray(serversNode.assigned)) {
+      return [...(serversNode.owned || []), ...(serversNode.assigned || [])]
+    }
+
+    const values = Object.values(serversNode)
+    if (values.length > 0) {
+      if (values.every((v) => Array.isArray(v))) {
+        return values.flat()
+      }
+      if (values.every((v) => v && typeof v === 'object')) {
+        return values
+      }
+    }
+  }
+
+  if (Array.isArray(data.boxes)) return data.boxes
+
+  return []
+}
+
 function Boxes() {
   const [boxes, setBoxes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const { isAuthenticated } = useAuth()
+
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://proxy.roomsense.info:8443'
+
+  const isBoxOnline = (box) => {
+    const status = typeof box?.status === 'string' ? box.status.toLowerCase() : ''
+    return box?.online === true || box?.is_online === true || status === 'online'
+  }
+
+  const getOwnershipLabel = (box) => {
+    if (box?.role === 'owner') return 'Owned by you'
+    if (box?.owner_username) return `Owned by ${box.owner_username}`
+    return 'Owned by another user'
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,13 +63,7 @@ function Boxes() {
     setError('')
     try {
       const data = await getBoxes()
-      const payload = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.servers)
-          ? data.servers
-          : Array.isArray(data?.boxes)
-            ? data.boxes
-            : []
+      const payload = normalizeBoxesPayload(data)
       setBoxes(payload)
     } catch (err) {
       setError(err.message)
@@ -92,14 +127,18 @@ function Boxes() {
                 <span 
                   className="status-badge"
                   style={{ 
-                    backgroundColor: box.online || box.is_online ? 'var(--primary)' : 'var(--muted)',
-                    color: box.online || box.is_online ? 'var(--primary-foreground)' : 'var(--foreground)'
+                    backgroundColor: isBoxOnline(box) ? 'var(--primary)' : 'var(--muted)',
+                    color: isBoxOnline(box) ? 'var(--primary-foreground)' : 'var(--foreground)'
                   }}
                 >
-                  {box.online || box.is_online ? '● Online' : '○ Offline'}
+                  {isBoxOnline(box) ? '● Online' : '○ Offline'}
                 </span>
               </div>
-              
+
+              <p className="text-muted mb-2" style={{ fontSize: '0.875rem' }}>
+                <strong>Ownership:</strong> {getOwnershipLabel(box)}
+              </p>
+
               {box.description && (
                 <p className="text-muted mb-4" style={{ fontSize: '0.875rem' }}>
                   {box.description}
@@ -128,6 +167,19 @@ function Boxes() {
                   </p>
                 )}
               </div>
+
+              {box.id && (
+                <div className="mt-4">
+                  <a
+                    href={`${apiBaseUrl}/proxy/${box.id}/`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-outline"
+                  >
+                    Open Gateway
+                  </a>
+                </div>
+              )}
             </div>
           ))}
         </div>
