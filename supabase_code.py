@@ -284,13 +284,22 @@ def verify_email_change_token(supabase: Client, token_hash: str, token_type: str
 def get_user_servers(supabase: Client, user_id: str) -> dict:
     try:
         owned_response = supabase.table("connected_servers").select(
-            "id, name, created_at, last_seen, status, metadata, owner, users!owner(username)"
+            "id, name, created_at, last_seen, status, metadata, owner"
         ).eq("owner", user_id).execute()
 
+        assigned_response = supabase.table("server_assignments").select(
+            "server_id, connected_servers!server_id(id, name, created_at, last_seen, status, metadata, owner)"
+        ).eq("assigned_to", user_id).execute()
+
         owned_servers = []
+        assigned_servers = []
+        owner_ids = set()
+
         if owned_response.data:
             for server in owned_response.data:
-                owner_info = server.get("users", {})
+                owner_id = server.get("owner")
+                if owner_id:
+                    owner_ids.add(owner_id)
                 owned_servers.append({
                     "id": server.get("id"),
                     "name": server.get("name"),
@@ -298,20 +307,18 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
                     "last_seen": server.get("last_seen"),
                     "status": server.get("status"),
                     "metadata": server.get("metadata"),
-                    "owner_username": owner_info.get("username") if owner_info else None,
+                    "owner": owner_id,
+                    "owner_username": None,
                     "role": "owner"
                 })
 
-        assigned_response = supabase.table("server_assignments").select(
-            "server_id, connected_servers!server_id(id, name, created_at, last_seen, status, metadata, owner, users!owner(username))"
-        ).eq("assigned_to", user_id).execute()
-
-        assigned_servers = []
         if assigned_response.data:
             for assignment in assigned_response.data:
                 server = assignment.get("connected_servers", {})
                 if server:
-                    owner_info = server.get("users", {})
+                    owner_id = server.get("owner")
+                    if owner_id:
+                        owner_ids.add(owner_id)
                     assigned_servers.append({
                         "id": server.get("id"),
                         "name": server.get("name"),
@@ -319,9 +326,26 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
                         "last_seen": server.get("last_seen"),
                         "status": server.get("status"),
                         "metadata": server.get("metadata"),
-                        "owner_username": owner_info.get("username") if owner_info else None,
+                        "owner": owner_id,
+                        "owner_username": None,
                         "role": "assigned"
                     })
+
+        username_by_id = {}
+        if owner_ids:
+            users_response = supabase.table("users").select("id, username").in_("id", list(owner_ids)).execute()
+            if users_response.data:
+                username_by_id = {
+                    user.get("id"): user.get("username")
+                    for user in users_response.data
+                    if user.get("id")
+                }
+
+        for server in owned_servers:
+            server["owner_username"] = username_by_id.get(server.get("owner"))
+
+        for server in assigned_servers:
+            server["owner_username"] = username_by_id.get(server.get("owner"))
 
         return {
             "owned": owned_servers,
