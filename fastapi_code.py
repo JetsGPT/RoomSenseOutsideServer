@@ -252,6 +252,70 @@ async def websocket_gateway(websocket: WebSocket):
             update_box_status(supabase, box_id, "offline")
 
 
+# Hop-by-hop headers are transport-specific and must not be forwarded through proxies.
+HOP_BY_HOP_HEADERS = {
+    "connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te",
+    "trailer", "transfer-encoding", "upgrade",
+}
+
+# Safe defaults for request headers to preserve app/auth behavior across proxying.
+DEFAULT_ALLOWED_REQUEST_HEADERS = {
+    "accept", "accept-encoding", "accept-language", "authorization", "cache-control",
+    "content-type", "cookie", "origin", "referer", "user-agent", "x-csrf-token",
+    "x-requested-with",
+}
+
+
+def sanitize_forward_request_headers(request: Request) -> Dict[str, str]:
+    """Forward only safe headers, keep auth/cookies, and inject proxy context headers."""
+    forwarded: Dict[str, str] = {}
+
+    for key, value in request.headers.items():
+        lower = key.lower()
+
+        # Always drop hop-by-hop and connection-specific browser headers.
+        if lower in HOP_BY_HOP_HEADERS:
+            continue
+        if lower in {"host", "content-length"}:
+            continue
+        if lower.startswith("sec-"):
+            continue
+
+        if lower in DEFAULT_ALLOWED_REQUEST_HEADERS or lower.startswith("x-"):
+            forwarded[key] = value
+
+    client_host = request.client.host if request.client else "unknown"
+    existing_xff = request.headers.get("x-forwarded-for")
+    if existing_xff:
+        forwarded["X-Forwarded-For"] = f"{existing_xff}, {client_host}"
+    else:
+        forwarded["X-Forwarded-For"] = client_host
+
+    forwarded["X-Forwarded-Proto"] = request.url.scheme
+    forwarded["X-Forwarded-Host"] = request.headers.get("host", "")
+
+    return forwarded
+
+
+def apply_upstream_response_headers(response: Response, upstream_headers: Dict[str, str]) -> None:
+    """Copy safe upstream response headers back to the client, preserving set-cookie semantics."""
+    for key, value in upstream_headers.items():
+        lower = key.lower()
+
+        # Do not mirror transport-specific or size headers handled by ASGI/Starlette.
+        if lower in HOP_BY_HOP_HEADERS:
+            continue
+        if lower in {"content-length", "content-encoding"}:
+            continue
+
+        # Starlette appends duplicate Set-Cookie lines when using raw_headers.
+        if lower == "set-cookie":
+            response.raw_headers.append((b"set-cookie", value.encode("latin-1", errors="ignore")))
+            continue
+
+        response.headers[key] = value
+
+
 @app.api_route("/proxy/{box_id}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_request(box_id: str, path: str, request: Request):
     if box_id not in active_connections:
@@ -266,7 +330,7 @@ async def proxy_request(box_id: str, path: str, request: Request):
         "method": request.method,
         "path": f"/{path}",
         "query": str(request.query_params),
-        "headers": dict(request.headers),
+        "headers": sanitize_forward_request_headers(request),
         "body": body.decode("utf-8") if body else None
     }
 
@@ -285,11 +349,13 @@ async def proxy_request(box_id: str, path: str, request: Request):
         if isinstance(response_body, (dict, list)):
             response_body = json.dumps(response_body)
 
-        return Response(
+        response = Response(
             content=response_body,
             status_code=resp_payload.get("status", 200),
             media_type=resp_payload.get("headers", {}).get("content-type", "application/json")
         )
+        apply_upstream_response_headers(response, resp_payload.get("headers", {}))
+        return response
 
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="Target server timed out")
