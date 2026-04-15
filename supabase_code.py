@@ -283,6 +283,8 @@ def verify_email_change_token(supabase: Client, token_hash: str, token_type: str
 
 def get_user_servers(supabase: Client, user_id: str) -> dict:
     try:
+        print(f"[get_user_servers] user_id={user_id}")
+
         owned_response = supabase.table("connected_servers").select(
             "id, name, created_at, last_seen, status, metadata, owner"
         ).eq("owner", user_id).execute()
@@ -291,9 +293,24 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
             "server_id, connected_servers!server_id(id, name, created_at, last_seen, status, metadata, owner)"
         ).eq("assigned_to", user_id).execute()
 
+        owned_count = len(owned_response.data) if owned_response.data else 0
+        assigned_count = len(assigned_response.data) if assigned_response.data else 0
+        print(f"[get_user_servers] owned_count={owned_count} assigned_rows={assigned_count}")
+        if owned_response.data:
+            print(f"[get_user_servers] owned_sample={owned_response.data[0]}")
+        if assigned_response.data:
+            sample_assignment = assigned_response.data[0]
+            joined_sample = sample_assignment.get("connected_servers")
+            print(f"[get_user_servers] assignment_sample={sample_assignment}")
+            print(
+                f"[get_user_servers] connected_servers_type={type(joined_sample).__name__} "
+                f"connected_servers_is_none={joined_sample is None}"
+            )
+
         owned_servers = []
         assigned_servers = []
         owner_ids = set()
+        assigned_server_ids = []
 
         if owned_response.data:
             for server in owned_response.data:
@@ -314,9 +331,12 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
 
         if assigned_response.data:
             for assignment in assigned_response.data:
+                sid = assignment.get("server_id")
+                if sid:
+                    assigned_server_ids.append(sid)
+
                 joined = assignment.get("connected_servers")
 
-                # Supabase embedded relations can be a dict (to-one) or a list (to-many metadata).
                 servers = []
                 if isinstance(joined, dict):
                     servers = [joined]
@@ -339,7 +359,6 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
                         "role": "assigned"
                     })
 
-        # Prevent duplicate assigned rows if relationship metadata yields repeated embeds.
         if assigned_servers:
             seen_ids = set()
             unique_assigned = []
@@ -349,6 +368,34 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
                     seen_ids.add(sid)
                     unique_assigned.append(server)
             assigned_servers = unique_assigned
+
+        # Fallback path: if join embedding is blocked/empty (common with RLS), fetch by server_id directly.
+        if not assigned_servers and assigned_server_ids:
+            unique_ids = list({sid for sid in assigned_server_ids if sid})
+            print(f"[get_user_servers] join_empty_fallback_ids={unique_ids}")
+            fallback_response = supabase.table("connected_servers").select(
+                "id, name, created_at, last_seen, status, metadata, owner"
+            ).in_("id", unique_ids).execute()
+
+            fallback_count = len(fallback_response.data) if fallback_response.data else 0
+            print(f"[get_user_servers] fallback_connected_servers_count={fallback_count}")
+
+            if fallback_response.data:
+                for server in fallback_response.data:
+                    owner_id = server.get("owner")
+                    if owner_id:
+                        owner_ids.add(owner_id)
+                    assigned_servers.append({
+                        "id": server.get("id"),
+                        "name": server.get("name"),
+                        "created_at": server.get("created_at"),
+                        "last_seen": server.get("last_seen"),
+                        "status": server.get("status"),
+                        "metadata": server.get("metadata"),
+                        "owner": owner_id,
+                        "owner_username": None,
+                        "role": "assigned"
+                    })
 
         username_by_id = {}
         if owner_ids:
@@ -366,12 +413,17 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
         for server in assigned_servers:
             server["owner_username"] = username_by_id.get(server.get("owner"))
 
+        print(
+            f"[get_user_servers] parsed_owned={len(owned_servers)} "
+            f"parsed_assigned={len(assigned_servers)} owner_ids={len(owner_ids)}"
+        )
+
         return {
             "owned": owned_servers,
             "assigned": assigned_servers
         }
     except Exception as e:
-        print(f"Error getting user servers: {e}")
+        print(f"[get_user_servers] ERROR user_id={user_id} error={e}")
         return {"owned": [], "assigned": []}
 
 
