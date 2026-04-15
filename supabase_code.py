@@ -314,8 +314,16 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
 
         if assigned_response.data:
             for assignment in assigned_response.data:
-                server = assignment.get("connected_servers", {})
-                if server:
+                joined = assignment.get("connected_servers")
+
+                # Supabase embedded relations can be a dict (to-one) or a list (to-many metadata).
+                servers = []
+                if isinstance(joined, dict):
+                    servers = [joined]
+                elif isinstance(joined, list):
+                    servers = [s for s in joined if isinstance(s, dict)]
+
+                for server in servers:
                     owner_id = server.get("owner")
                     if owner_id:
                         owner_ids.add(owner_id)
@@ -330,6 +338,17 @@ def get_user_servers(supabase: Client, user_id: str) -> dict:
                         "owner_username": None,
                         "role": "assigned"
                     })
+
+        # Prevent duplicate assigned rows if relationship metadata yields repeated embeds.
+        if assigned_servers:
+            seen_ids = set()
+            unique_assigned = []
+            for server in assigned_servers:
+                sid = server.get("id")
+                if sid and sid not in seen_ids:
+                    seen_ids.add(sid)
+                    unique_assigned.append(server)
+            assigned_servers = unique_assigned
 
         username_by_id = {}
         if owner_ids:
